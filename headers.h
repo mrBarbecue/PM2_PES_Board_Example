@@ -1,6 +1,12 @@
 #ifndef HEADERS_H
 #define HEADERS_H
 
+#include "mbed.h"
+#include "pm2_drivers/PESBoardPinMap.h"
+#include "pm2_drivers/DebounceIn.h"
+#include "DCMotor.h"
+
+
 //drive.cpp
 void nextPosition(int pos);       //Fährt zur nächsten Position vor dem Startbehälter, int pos -> welche position vor dem Behälter
 void toStartContainer();          //Fährt zu Startbehälter
