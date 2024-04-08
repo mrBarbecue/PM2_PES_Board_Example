@@ -15,7 +15,17 @@ PWM input 0.5f: 0V
 PWM input 1.0f: 12V
 */
 
+//motorDriveRight.setRotation(3.0f);
+//motorDriveLeft.setRotation(3.0f);
+
 class Drive{
+
+    private:
+        //motorDriveRight und motorDriveRight Getriebe
+        const float gearRatioMotorDrive = 100.0f;   // gear ratio
+        const float rpmV = 140.0f / 12.0f;          // motor constant [rpm/V]
+        const float voltageMax = 12.0f;
+        const float maxVelocity = 5.14f / voltageMax;
 
     public:
         Drive(){                          //Konsturktor
@@ -25,18 +35,13 @@ class Drive{
             // enable hardwaredriver DC motors: 0 -> disabled, 1 -> enabled
             enableMotors = 1; // setting this once would actually be enough
 
-            //motorDriveRight und motorDriveRight Getriebe
-            const float gearRatioMotorDrive = 100.0f;   // gear ratio
-            const float rpmV = 140.0f / 12.0f;          // motor constant [rpm/V]
-
-            const float voltageMax = 12.0f;
-            const float maxVelocity = 5.14f / voltageMax;
 
             DCMotor motorDriveRight(PinMotorDriveRight, PinEncoderMotorRightA, PinEncoderMotorRightB, gearRatioMotorDrive, rpmV, voltageMax);
             // enable the motion planner for smooth movement
             motorDriveRight.enableMotionPlanner(true);
             // limitiert Maximumgeschwindigkeit
             motorDriveRight.setMaxVelocity(motorDriveRight.getMaxPhysicalVelocity() * maxVelocity);
+
 
             DCMotor motorDriveLeft(PinMotorDriveLeft, PinEncoderMotorLeftA, PinEncoderMotorLeftB, gearRatioMotorDrive, rpmV, voltageMax);
             // enable the motion planner for smooth movement
