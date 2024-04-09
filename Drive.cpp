@@ -9,41 +9,48 @@
 #define PinEncoderMotorLeftA PB_ENC_A_M2
 #define PinEncoderMotorLeftB PB_ENC_B_M2
 
+#define beforContainer
+
 /*
 PWM input 0.0f: -12V
 PWM input 0.5f: 0V
 PWM input 1.0f: 12V
-*/
 
-//motorDriveRight.setRotation(3.0f);
-//motorDriveLeft.setRotation(3.0f);
+MotorLiftWheel.setVelocity(MotorLiftWheel.getMaxVelocity() * 0.5f); halbe Geschwindigkeit
+MotorLiftWheel.setVelocity(1.0f); volle Geschwindigkeit
+MotorLiftWheel.setVelocity(standardVelocity); standart Geschwindigkeit
+MotorLiftWheel.setRotation(3.0f);
+*/
 
 class Drive{
 
     private:
+        DCMotor motorDriveRight;
+        DCMotor motorDriveLeft;
+
         //motorDriveRight und motorDriveRight Getriebe
         const float gearRatioMotorDrive = 100.0f;   // gear ratio
         const float rpmV = 140.0f / 12.0f;          // motor constant [rpm/V]
         const float voltageMax = 12.0f;
-        const float maxVelocity = 5.14f / voltageMax;
+        const float maxVelocity = 5.14f / voltageMax; // soll 60rpm, 1rps
 
     public:
-        Drive(){                          //Konsturktor
+        Drive() :
+            motorDriveRight(PinMotorDriveRight, PinEncoderMotorRightA, PinEncoderMotorRightB, gearRatioMotorDrive, rpmV, voltageMax),
+            motorDriveLeft(PinMotorDriveLeft, PinEncoderMotorLeftA, PinEncoderMotorLeftB, gearRatioMotorDrive, rpmV, voltageMax)
+        {                          
 
             // create object to enable power electronics for the DC motors
             DigitalOut enableMotors(PinEnableDcMotors);
             // enable hardwaredriver DC motors: 0 -> disabled, 1 -> enabled
             enableMotors = 1; // setting this once would actually be enough
 
-
-            DCMotor motorDriveRight(PinMotorDriveRight, PinEncoderMotorRightA, PinEncoderMotorRightB, gearRatioMotorDrive, rpmV, voltageMax);
             // enable the motion planner for smooth movement
             motorDriveRight.enableMotionPlanner(true);
             // limitiert Maximumgeschwindigkeit
             motorDriveRight.setMaxVelocity(motorDriveRight.getMaxPhysicalVelocity() * maxVelocity);
 
 
-            DCMotor motorDriveLeft(PinMotorDriveLeft, PinEncoderMotorLeftA, PinEncoderMotorLeftB, gearRatioMotorDrive, rpmV, voltageMax);
             // enable the motion planner for smooth movement
             motorDriveLeft.enableMotionPlanner(true);
             // limitiert Maximumgeschwindigkeit

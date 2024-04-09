@@ -4,29 +4,31 @@
 #define PinEncoderLiftWheelA PB_ENC_A_M3
 #define PinEncoderLiftWheelB PB_ENC_B_M3
 
+#define PinWheel
+
+#define wheelLowerPosition PB_D1
+
 /*
 MotorLiftWheel.setVelocity(MotorLiftWheel.getMaxVelocity() * 0.5f); halbe Geschwindigkeit
-oder
 MotorLiftWheel.setVelocity(1.0f); volle Geschwindigkeit
-oder
 MotorLiftWheel.setVelocity(standardVelocity); standart Geschwindigkeit
-oder
 MotorLiftWheel.setRotation(3.0f);
 */
 
 class Mining{
     private:
-        const float gearRatioMotorLiftWheel = 31.25f;   // gear ratio
-        const float rpmV = 450.0f / 12.0f;          // motor constant [rpm/V]
+        DCMotor MotorLiftWheel;
+
+        const float gearRatioMotorLiftWheel = 31.25f;
+        const float rpmV = 450.0f / 12.0f;
         const float voltageMax = 12.0f;
         const float maxVelocity = 1.0f;
-        const float standardVelocity = 8.13f / voltageMax;
+        const float standardVelocity = 8.13f / voltageMax; // soll 350rpm, 5rps
+
     
     public:
-        Mining(){
-            //Erstellt zwei Objekte, eines für Velocity Controll und einse für Position Control
+        Mining() : MotorLiftWheel(PinMotorLiftWheel, PinEncoderLiftWheelA, PinEncoderLiftWheelB, gearRatioMotorLiftWheel, rpmV, voltageMax){
 
-            DCMotor MotorLiftWheel(PinMotorLiftWheel, PinEncoderLiftWheelA, PinEncoderLiftWheelB, gearRatioMotorLiftWheel, rpmV, voltageMax);
             // enable the motion planner for smooth movement
             MotorLiftWheel.enableMotionPlanner(true);
             // limitiert Maximumgeschwindigkeit
@@ -36,7 +38,10 @@ class Mining{
 
         }
         void initializeMotorLiftWheel(){  //Nullt den Encoder des Motors MotorLiftWheel
-
+            MotorLiftWheel.setVelocity(-1.0f); //fährt mit voller Geschwindigkeit nach unten
+            while(wheelLowerPosition != 0);
+            MotorLiftWheel.setVelocity(0.0f);
+            MotorLiftWheel.setEncoderToZero();
         }
         int lowerWheel(int enable){       //Senkt Schaufelrad, int enable -> Senkt falls true, Stoppt bei false, rückgabewert -> false, wenn untere pos erreicht
 

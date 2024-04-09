@@ -5,6 +5,7 @@
 #include "pm2_drivers/PESBoardPinMap.h"
 #include "pm2_drivers/DebounceIn.h"
 #include "DCMotor.h"
+#include "pm2_drivers/Servo.h"
 
 
 //drive.cpp
