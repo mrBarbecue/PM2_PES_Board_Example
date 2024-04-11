@@ -24,6 +24,8 @@ class Mining{
         const float voltageMax = 12.0f;
         const float maxVelocity = 1.0f;
         const float standardVelocity = 8.13f / voltageMax; // soll 350rpm, 5rps
+        const float threadedRodlengtMm = ???f;
+        const float wheelUpperPos = threadedRodlengtMm / (1.25f * gearRatioMotorLiftWheel * 20); //Encoder Position Rad ganz oben, (20 weil 20 Encoderimpulse/umdrehung)
 
     
     public:
