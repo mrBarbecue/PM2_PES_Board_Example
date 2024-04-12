@@ -6,8 +6,6 @@
 
 #define PinWheel
 
-#define wheelLowerPosition PB_D1
-
 /*
 MotorLiftWheel.setVelocity(MotorLiftWheel.getMaxVelocity() * 0.5f); halbe Geschwindigkeit
 MotorLiftWheel.setVelocity(1.0f); volle Geschwindigkeit
@@ -15,48 +13,60 @@ MotorLiftWheel.setVelocity(standardVelocity); standart Geschwindigkeit
 MotorLiftWheel.setRotation(3.0f);
 */
 
-class Mining{
-    private:
-        DCMotor MotorLiftWheel;
+Mining::Mining() :
+    //MotorLiftWheel(PinMotorLiftWheel, PinEncoderLiftWheelA, PinEncoderLiftWheelB, 31.25f, 450.0f/12.0f, 12.0f),
+    MotorLiftWheel(PinMotorLiftWheel, PinEncoderLiftWheelA, PinEncoderLiftWheelB, 100.0f, 140.0f/12.0f, 12.0f),
+    wheelLowerPosition(PB_D1)  //Endschalter ist NC
+{
+    // enable the motion planner for smooth movement
+    MotorLiftWheel.enableMotionPlanner(true);
+    // limitiert Maximumgeschwindigkeit
+    MotorLiftWheel.setMaxVelocity(MotorLiftWheel.getMaxPhysicalVelocity() * maxVelocity);
 
-        const float gearRatioMotorLiftWheel = 31.25f;
-        const float rpmV = 450.0f / 12.0f;
-        const float voltageMax = 12.0f;
-        const float maxVelocity = 1.0f;
-        const float standardVelocity = 8.13f / voltageMax; // soll 350rpm, 5rps
-        const float threadedRodlengtMm = 80.0f;
-        const float wheelUpperPos = threadedRodlengtMm / (1.25f * gearRatioMotorLiftWheel * 20); //Encoder Position Rad ganz oben, (20 weil 20 Encoderimpulse/umdrehung)
+    wheelLowerPosition.mode(PullDown);
+}
 
-    
-    public:
-        Mining() : MotorLiftWheel(PinMotorLiftWheel, PinEncoderLiftWheelA, PinEncoderLiftWheelB, gearRatioMotorLiftWheel, rpmV, voltageMax){
+void Mining::spinnWheel(bool enable){      //Dreht Schaufelrad, int enable -> Dreht falls true, Stoppt falls false
+    //PinWheel = enable;
+}
 
-            // enable the motion planner for smooth movement
-            MotorLiftWheel.enableMotionPlanner(true);
-            // limitiert Maximumgeschwindigkeit
-            MotorLiftWheel.setMaxVelocity(MotorLiftWheel.getMaxPhysicalVelocity() * maxVelocity);
+void Mining::initializeMotorLiftWheel(){  //Nullt den Encoder des Motors MotorLiftWheel
+    printf("initializeMotorLiftWheel\n");
+    MotorLiftWheel.setVelocity(-1.0f); //fährt mit voller Geschwindigkeit nach unten
+    while(wheelLowerPosition.read() == true){
+        printf("%f\n",MotorLiftWheel.getRotation());
+        if(MotorLiftWheel.getRotation() < (-wheelUpperPosRotation)){ //Watchdog falls Endschalter nicht angiebt
+            printf("limitSwitchMissing\n");
+            break;
         }
-        void spinnWheel(int enable){      //Dreht Schaufelrad, int enable -> Dreht falls true, Stoppt falls false
+    }
+    MotorLiftWheel.setVelocity(0.0f);
+    wheelLowerPositionRotation = MotorLiftWheel.getRotation();
+}
 
-        }
-        void initializeMotorLiftWheel(){  //Nullt den Encoder des Motors MotorLiftWheel
-            MotorLiftWheel.setVelocity(-1.0f); //fährt mit voller Geschwindigkeit nach unten
-            while(wheelLowerPosition != 0);
-            MotorLiftWheel.setVelocity(0.0f);
-            MotorLiftWheel.setEncoderToZero();
-        }
-        int lowerWheel(int enable){       //Senkt Schaufelrad, int enable -> Senkt falls true, Stoppt bei false, rückgabewert -> false, wenn untere pos erreicht
+bool Mining::lowerWheel(){       //Senkt Schaufelrad, rückgabewert false wenn ganz unten
+    if(wheelLowerPosition.read() == false){
+        printf("wheelLowerPosition\n");
+        printf("%f\n",MotorLiftWheel.getRotation());
+        MotorLiftWheel.setVelocity(0.0f);
+        return 0;
+    }
+    else{
+        printf("lowerWheel\n");
+        printf("%f\n",MotorLiftWheel.getRotation());
+        MotorLiftWheel.setVelocity(-standardVelocity);
+        return 1;
+    }
+}
 
-        return 9999999999999999999;
-        }
-        void WheelToUpperPos(){           //Hebt Schaufelrad in die obere Endlage   (Volle Geschwindigkeit)
+void Mining::WheelToUpperPos(){           //Hebt Schaufelrad in die obere Endlage   (Volle Geschwindigkeit)
+    printf("WheelToUpperPos\n");
+    printf("%f\n",MotorLiftWheel.getRotation());
+    MotorLiftWheel.setRotation(wheelUpperPosRotationOff);
+}
 
-        }
-        void WheelTo10cm(){                //Senkt oder Hebt Schaufelrad auf 10cm    (Volle Geschwindigkeit)
-
-        }
-
-    private:
-
-
-};
+void Mining::WheelTo10cm(){                //Senkt oder Hebt Schaufelrad auf 10cm    (Volle Geschwindigkeit)
+    printf("WheelTo10cm\n");
+    printf("%f\n",MotorLiftWheel.getRotation());
+    MotorLiftWheel.setRotation(wheel10cmPosRotationOff);
+}

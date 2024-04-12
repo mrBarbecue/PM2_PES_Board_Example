@@ -1,5 +1,4 @@
-#if false
-
+/*
 #include "headers.h"
 
 #define PinServoTilt PB_D2
@@ -45,4 +44,4 @@ float servo_D1_ang_max = 0.1175f;
 // servo.setNormalisedPulseWidth: after calibration (0,1) -> (servo_D0_ang_min, servo_D0_ang_max)
 servoTilt.calibratePulseMinMax(servo_D0_ang_min, servo_D0_ang_max);
 
-#endif
+*/

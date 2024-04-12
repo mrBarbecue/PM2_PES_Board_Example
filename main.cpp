@@ -1,4 +1,5 @@
 #include "headers.h"
+#define PinEnableDcMotors PB_ENABLE_DCMOTORS
 
 bool executeMainTask = false; // this variable will be toggled via the user button (blue button) and
                                    // decides whether to execute the main task or not
@@ -9,8 +10,12 @@ bool resetAll = false;    // this variable is used to reset certain variables an
 DebounceIn user_button(USER_BUTTON); // create DebounceIn object to evaluate the user button
                                      // falling and rising edge
 
- void executeMainFunction()  // custom function which is getting executed when userbutton gets pressed
-{
+// create object to enable power electronics for the DC motors
+DigitalOut enableMotors(PinEnableDcMotors);
+
+
+void executeMainFunction(){  // custom function which is getting executed when userbutton gets pressed
+
     // toggle executeMainTask if the button was pressed
     executeMainTask = !executeMainTask;
     // set resetAll to true if executeMainTask changed from false to true
@@ -26,7 +31,7 @@ int main()
 
     // while loop gets executed every mainTaskPeriod milliseconds, this is a
     // simple approach to repeatedly execute main
-    const int mainTaskPeriod = 20; // define main task period time in ms e.g. 20 ms, there for
+    const int mainTaskPeriod = 200; // define main task period time in ms e.g. 20 ms, there for
                                         // the main task will run 50 times per second
     Timer MainTaskTimer;              // create Timer object which we use to run the main task
                                         // every mainTaskPeriod
@@ -37,14 +42,22 @@ int main()
     // start timer
     MainTaskTimer.start();
 
+    // enable hardwaredriver DC motors: 0 -> disabled, 1 -> enabled
+    enableMotors = 1; // setting this once would actually be enough
+
+    Mining Wheel;
+
     // this loop will run forever
     while (true) {
         MainTaskTimer.reset();
+        Wheel.initializeMotorLiftWheel();
 
         if (executeMainTask) {
+            Wheel.WheelTo10cm();
 
-
-        } else {
+        }
+        else{
+            
             // the following code block gets executed only once
             if (resetAll) {
                 resetAll = false;
