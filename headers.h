@@ -35,8 +35,8 @@ class Mining{
         const float voltageMax = 12.0f;
         const float maxVelocity = 1.0f;
         const float standardVelocity = 8.13f / voltageMax; // soll 350rpm, 5rps
-        const float threadedRodlengtMm = 80.0f; //Länge der Gewindestange
         const float ThreadPitch = 1.25f; //Steigung des Gewinde
+        const float threadedRodlengtMm = 80.0f; //Länge der Gewindestange
         const float wheel10cmRod = 45.0f; //auf welchecher Position (mm auf der Gewindestange) sich der Motor befindet, um über den Perlen zu sein
 
         const float wheelUpperPosRotation = threadedRodlengtMm / ThreadPitch; //Anzahl Umdreungen bis ganz oben
