@@ -28,10 +28,10 @@ class Drive{
         float rotationsRobot = 0; //Speichert Anzahl Umdrehungen um Roboter um entsprechenden Winkel zu drehen
         float rotationsDistance = 0; //Speichert anzahl umdrehungen für Distanz
 
-        const int startAreaX = 250; //In milimeter, wie breit der Bereich vor dem Startcontainer ist, wo sich der Roboter hinstellen kann
-        const int startAreaY = 80;
+        const int startAreaX = 180; //In milimeter, wie breit der Bereich vor dem Startcontainer ist, wo sich der Roboter hinstellen kann
+        const int startAreaY = 50;
         const int startPosX = 125; //Wieviele mm vor dem Startbehälter sich die Räder befinden (Rädermittelpunkt ist Koordinatenursprung von Roboter)
-        const int startPosY = 150; //Ebenfalls bezogen auf Räder
+        const int startPosY = 85;
         const float triggBeforeContainer = 2.5f / 3.3f; //2.5V Spannung, wird normiert. Schwellwert ab wann der Roboter vor dem Container steht (bezogen auf Sensor)
 
         float currentPosX; //Speicher aktuelle X position
@@ -40,21 +40,21 @@ class Drive{
         const int amountOfPositions = 4; //Wieviele verschiedene Aufnahmepositionen vor Startbehälter es gibt, braucht es, um bestmögliche Verteilung vor Startbehählter zu berechnen
         int currentPosition = 0; //Speichert wo sich der Roboter aktuell befindet (Nicht Koordinaten)
 
-    private:
-        void changeAngleRel(int angle);        //Ändert Winkel des Roboters (Relativ und in GRAD)
-        void changeAngleAbs(int angle);        //Ändert Winkel des Roboters (Absolut und in RAD)
-        void driveStraight(int distance);   //Wie weit der Roboter gerade fahren soll (Relativ)
-        void calculatePos(int distance);    //Berechnet aktuelle Koordinaten, wenn vorhin über changeAngle und driveStraight gefahren wurde
-        void getPosX();                     //Gibt aktuelle X Position zurück
-        void getPosY():                     //Gibt aktuelle Y Position zurück
+        void changeAngleRel(float angle);        //Ändert Winkel des Roboters (Relativ und in GRAD)
+        void changeAngleAbs(float angle);        //Ändert Winkel des Roboters (Absolut und in RAD)
+        void driveStraight(int distance);        //Wie weit der Roboter gerade fahren soll (Relativ)
+        void calculateCurrentPos(int distance);  //Berechnet aktuelle Koordinaten, wenn vorhin über changeAngleRel und driveStraight gefahren wurde
+        void calculatePosition();                 //Berechnet anhand Konstante amountofPositions die Koordinaten dieser Positionenen
 
     public:
         Drive();
         void initializeDriveMotors();      
-        void driveTo(int x, int y);       //Fährt Koordinaten an
-        void nextPosition(int pos);       //Fährt zur nächsten Position vor dem Startbehälter, int pos -> welche position vor dem Behälter
-        void toStartContainer();          //Fährt zu Startbehälter
-        void toFinishContainer();         //Fährt zum Zielbehälter
+        void driveTo(int x, int y);              //Fährt Koordinaten an
+        void driveToPosition(int pos);              //Fährt zur nächsten Position vor dem Startbehälter, int pos -> welche position vor dem Behälter
+        void toStartContainer();                 //Fährt zu Startbehälter
+        void toFinishContainer();                //Fährt zum Zielbehälter
+        float getPosX();                         //Gibt aktuelle X Position zurück
+        float getPosY();                         //Gibt aktuelle Y Position zurück
 };
 
 class Mining{

@@ -29,7 +29,7 @@ MotorLiftWheel.setRotation(3.0f);
 Drive::Drive() :
     motorDriveRight(PinMotorDriveRight, PinEncoderMotorRightA, PinEncoderMotorRightB, 100.0f, 140.0f/12.0f, 12.0f),
     motorDriveLeft(PinMotorDriveLeft, PinEncoderMotorLeftA, PinEncoderMotorLeftB, 100.0f, 140.0f/12.0f, 12.0f),
-    beforContainer(PinBeforContainer)
+    beforeContainer(PinBeforContainer)
 {                          
     // enable the motion planner for smooth movement
     motorDriveRight.enableMotionPlanner(true);
@@ -46,18 +46,20 @@ void Drive::initializeDriveMotors(){    //Setzt Koordinaten
     printf("initializeDriveMotors\n");
     motorDriveLeft.setVelocity(1.0f);
     motorDriveRight.setVelocity(1.0f);
-    while(beforContainer.read() < triggBeforeContainer); //Fährt solange geradeaus, bis vor Container
+    while(beforeContainer.read() < triggBeforeContainer); //Fährt solange geradeaus, bis vor Container
     motorDriveLeft.setVelocity(0.0f);
     motorDriveRight.setVelocity(0.0f);
+    currentPosX = startPosX;
+    currentPosY = startPosY;
 }
 
-void Drive::changeAngleRel(float angle){   //Berechnung in Grad
+void Drive::changeAngleRel(float angle){   //Berechnung in Grad und relativ
     printf("changeAngleRel\n");
     //Berechnung anzahl Umdrehung um Roboter um entsprechenden Winkel zu drehen
     rotationsRobot = (angle / 360.0f * axialDistance) / wheelDiameter;
     
-    MotorDriveLeft.setRotation(MotorDriveLeft.getRotation() + rotationsRobot);
-    MotorDriveLeft.setRotation(MotorDriveRight.getRotation() + rotationsRobot);
+    motorDriveLeft.setRotation(motorDriveLeft.getRotation() + rotationsRobot);
+    motorDriveRight.setRotation(motorDriveRight.getRotation() + rotationsRobot);
 
     lastAngle = angle; //setzt neuen Winkel
     currentAngle += lastAngle;
@@ -70,30 +72,32 @@ void Drive::changeAngleRel(float angle){   //Berechnung in Grad
     }
 }
 
-void Drive::changeAngleAbs(float angle){   //Berechnung in Rad
+void Drive::changeAngleAbs(float angle){   //Berechnung in Rad und absolut
     printf("changeAngleAbs\n");
     //Berechnung anzahl Umdrehung um Roboter um entsprechenden Winkel zu drehen
     rotationsRobot = ((angle - currentAngle * PI / 180.0f) / 2 * PI * axialDistance) / wheelDiameter;
-    
-    MotorDriveLeft.setRotation(MotorDriveLeft.getRotation() + rotationsRobot);
-    MotorDriveLeft.setRotation(MotorDriveRight.getRotation() + rotationsRobot);
+    motorDriveLeft.setRotation(motorDriveLeft.getRotation() + rotationsRobot);
+    motorDriveRight.setRotation(motorDriveRight.getRotation() + rotationsRobot);
+
+    currentAngle += angle;
+    if(currentAngle > 360.0f){
+        currentAngle -= 360.0f;
+    }
+    if(currentAngle < 0){
+        currentAngle += 360;
+    }
 }
 
 void Drive::driveStraight(int distance){
     printf("driveStraight\n");
     //Speichert anzahl umdrehungen für Distanz
-    rotationsDistance = distance / (wheelDiameter * PI)
-    MotorDriveLeft.setRotation(MotorDriveLeft.getRotation() + rotationsDistance);
-    MotorDriveLeft.setRotation(MotorDriveRight.getRotation() + rotationsDistance);
+    rotationsDistance = distance / (wheelDiameter * PI);
+    motorDriveLeft.setRotation(motorDriveLeft.getRotation() + rotationsDistance);
+    motorDriveRight.setRotation(motorDriveRight.getRotation() + rotationsDistance);
     //calculatePos(int distance);
 }
 
-void Drive::calculatePos(int distance){ //Berechnung in rad
-    // +---> X
-    // |
-    // v
-    // Y
-
+void Drive::calculateCurrentPos(int distance){ //Berechnung in rad
     currentPosX += cos(lastAngle * 180.0f / PI) * distance;
     currentPosY -= sin(lastAngle * 180.0f / PI) * distance;
     printf("currentPosX: %f\n", currentPosX);
@@ -127,21 +131,28 @@ void Drive::calculatePos(int distance){ //Berechnung in rad
 }
 
 void Drive::driveTo(int x, int y){
-    changeAngleAbs(atan((y - currentPosY) / (x - currentPosX)));
-    if(MotorDriveLeft.getVelocity == 0.0f){
-    driveStraight(sqrt(pow(x - currentPosX, 2) + pow(y - currentPosY, 2)));
+    // +---> X
+    // |
+    // v
+    // Y
+
+    //Berechnet Winkel in Rad (Absolut)
+    changeAngleAbs(atan((currentPosY - y) / (x - currentPosX)));
+    //Sobald der Roboter mit richtigem Winkel steht, fährt er los
+    if(motorDriveLeft.getVelocityTarget() == 0.0f){
+        driveStraight(sqrt(pow(currentPosY - y, 2) + pow(x - currentPosX, 2)));
     }
 }
 
-int Drive::getPosX(){
+float Drive::getPosX(){
     return currentPosX;
 }
 
-int Drive::getPosY(){
+float Drive::getPosY(){
     return currentPosY;
 }
 
-void Drive::nextPosition(int pos){       //Fährt zur nächsten Position vor dem Startbehälter, int pos -> welche position vor dem Behälter
+void Drive::driveToPosition(int pos){       //Fährt zur nächsten Position vor dem Startbehälter, int pos -> welche position vor dem Behälter
 }
 
 void Drive::toStartContainer(){          //Fährt zu Startbehälter
