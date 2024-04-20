@@ -98,13 +98,7 @@ void Drive::changeAngleAbs(float angle){   //Berechnung in Rad und absolut
     motorDriveLeft.setMaxVelocity(motorDriveLeft.getMaxPhysicalVelocity() * maxVelocity);
     motorDriveRight.setMaxVelocity(motorDriveRight.getMaxPhysicalVelocity() * maxVelocity);
 
-    currentAngle += angle;
-    if(currentAngle >= 360.0f){
-        currentAngle -= 360.0f;
-    }
-    if(currentAngle < 0){
-        currentAngle += 360;
-    }
+    currentAngle = angle * 180.0f / PI;
 }
 
 void Drive::driveStraight(int distance){
