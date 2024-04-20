@@ -32,23 +32,29 @@ Drive::Drive() :
     beforeContainer(PinBeforContainer)
 {                          
     // enable the motion planner for smooth movement
+    motorDriveLeft.enableMotionPlanner(true);
+    // limitiert Maximumgeschwindigkeit
+    motorDriveLeft.setMaxVelocity(motorDriveLeft.getMaxPhysicalVelocity() * maxVelocity);
+
+    // enable the motion planner for smooth movement
     motorDriveRight.enableMotionPlanner(true);
     // limitiert Maximumgeschwindigkeit
     motorDriveRight.setMaxVelocity(motorDriveRight.getMaxPhysicalVelocity() * maxVelocity);
 
-    // enable the motion planner for smooth movement
-    motorDriveLeft.enableMotionPlanner(true);
-    // limitiert Maximumgeschwindigkeit
-    motorDriveLeft.setMaxVelocity(motorDriveLeft.getMaxPhysicalVelocity() * maxVelocity);
+
 }
 
 void Drive::initializeDriveMotors(){    //Setzt Koordinaten
     printf("initializeDriveMotors\n");
-    motorDriveLeft.setVelocity(1.0f);
-    motorDriveRight.setVelocity(1.0f);
+
+    motorDriveLeft.setVelocity(0.5f);
+    motorDriveRight.setVelocity(0.5f);
+
     while(beforeContainer.read() < triggBeforeContainer); //Fährt solange geradeaus, bis vor Container
+
     motorDriveLeft.setVelocity(0.0f);
     motorDriveRight.setVelocity(0.0f);
+
     currentPosX = startPosX;
     currentPosY = startPosY;
 }
@@ -58,13 +64,19 @@ void Drive::changeAngleRel(float angle){   //Berechnung in Grad und relativ
     //Berechnung anzahl Umdrehung um Roboter um entsprechenden Winkel zu drehen
     rotationsRobot = (angle / 360.0f * axialDistance) / wheelDiameter;
     
+    motorDriveLeft.setMaxVelocity(motorDriveLeft.getMaxPhysicalVelocity() * maxVelocity * 0.25f);
+    motorDriveRight.setMaxVelocity(motorDriveRight.getMaxPhysicalVelocity() * maxVelocity* 0.25f);
+    
     motorDriveLeft.setRotation(motorDriveLeft.getRotation() + rotationsRobot);
     motorDriveRight.setRotation(motorDriveRight.getRotation() + rotationsRobot);
+
+    motorDriveLeft.setMaxVelocity(motorDriveLeft.getMaxPhysicalVelocity() * maxVelocity);
+    motorDriveRight.setMaxVelocity(motorDriveRight.getMaxPhysicalVelocity() * maxVelocity);
 
     lastAngle = angle; //setzt neuen Winkel
     currentAngle += lastAngle;
 
-    if(currentAngle > 360.0f){
+    if(currentAngle >= 360.0f){
         currentAngle -= 360.0f;
     }
     if(currentAngle < 0){
@@ -76,11 +88,18 @@ void Drive::changeAngleAbs(float angle){   //Berechnung in Rad und absolut
     printf("changeAngleAbs\n");
     //Berechnung anzahl Umdrehung um Roboter um entsprechenden Winkel zu drehen
     rotationsRobot = ((angle - currentAngle * PI / 180.0f) / 2 * PI * axialDistance) / wheelDiameter;
+
+    motorDriveLeft.setMaxVelocity(motorDriveLeft.getMaxPhysicalVelocity() * maxVelocity * 0.25f);
+    motorDriveRight.setMaxVelocity(motorDriveRight.getMaxPhysicalVelocity() * maxVelocity* 0.25f);
+
     motorDriveLeft.setRotation(motorDriveLeft.getRotation() + rotationsRobot);
     motorDriveRight.setRotation(motorDriveRight.getRotation() + rotationsRobot);
 
+    motorDriveLeft.setMaxVelocity(motorDriveLeft.getMaxPhysicalVelocity() * maxVelocity);
+    motorDriveRight.setMaxVelocity(motorDriveRight.getMaxPhysicalVelocity() * maxVelocity);
+
     currentAngle += angle;
-    if(currentAngle > 360.0f){
+    if(currentAngle >= 360.0f){
         currentAngle -= 360.0f;
     }
     if(currentAngle < 0){
@@ -135,7 +154,6 @@ void Drive::driveTo(int x, int y){
     // |
     // v
     // Y
-
     //Berechnet Winkel in Rad (Absolut)
     changeAngleAbs(atan((currentPosY - y) / (x - currentPosX)));
     //Sobald der Roboter mit richtigem Winkel steht, fährt er los
