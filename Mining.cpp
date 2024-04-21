@@ -49,24 +49,45 @@ bool Mining::lowerWheel(){       //Senkt Schaufelrad, rückgabewert false wenn g
         printf("wheelLowerPosition\n");
         printf("%f\n",MotorLiftWheel.getRotation() + wheelLowerPositionRotation);
         MotorLiftWheel.setVelocity(0.0f);
-        return 0;
+        return false;
     }
     else{
         printf("lowerWheel\n");
-        printf("%f\n",MotorLiftWheel.getRotation()  + wheelLowerPositionRotation);
+        printf("%f\n",MotorLiftWheel.getRotation() + wheelLowerPositionRotation);
         MotorLiftWheel.setVelocity(-standardVelocity);
-        return 1;
+        return true;
     }
 }
 
-void Mining::WheelToUpperPos(){           //Hebt Schaufelrad in die obere Endlage   (Volle Geschwindigkeit)
-    printf("WheelToUpperPos\n");
-    printf("%f\n",MotorLiftWheel.getRotation() + wheelLowerPositionRotation);
-    MotorLiftWheel.setRotation(wheelUpperPosRotationOff);
+bool Mining::WheelToUpperPos(){           //Hebt Schaufelrad in die obere Endlage   (Volle Geschwindigkeit)
+    if(equalTo(MotorLiftWheel.getRotation(), wheelUpperPosRotationOff)){
+        return true;
+    }
+    else{
+        printf("WheelToUpperPos\n");
+        printf("%f\n",MotorLiftWheel.getRotation() + wheelLowerPositionRotation);
+        MotorLiftWheel.setRotation(wheelUpperPosRotationOff);
+        return false;
+    }
 }
 
-void Mining::WheelTo10cm(){                //Senkt oder Hebt Schaufelrad auf 10cm    (Volle Geschwindigkeit)
-    printf("WheelTo10cm\n");
-    printf("%f\n",MotorLiftWheel.getRotation()  + wheelLowerPositionRotation);
-    MotorLiftWheel.setRotation(wheel10cmPosRotationOff);
+bool Mining::WheelTo10cm(){                //Senkt oder Hebt Schaufelrad auf 10cm    (Volle Geschwindigkeit)
+    if(equalTo(MotorLiftWheel.getRotation(), wheel10cmPosRotationOff)){
+        return true;
+    }
+    else{
+        printf("WheelTo10cm\n");
+        printf("%f\n",MotorLiftWheel.getRotation() + wheel10cmPosRotation);
+        MotorLiftWheel.setRotation(wheel10cmPosRotationOff);
+        return false;
+    }
+}
+
+bool equalTo(float value1, float value2){
+    if((value1 > (value2-value2/100)) && (value1 < (value2+value2/100))){
+        return true;
+    }
+    else{
+        return false;
+    }
 }
