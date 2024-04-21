@@ -208,8 +208,8 @@ void Drive::calculateCurrentPos(int distance){ //Berechnung in rad
 }
 
 void Drive::calculatePositions(){
-    //Berechnet die Distanz zwischen den einzelnen X-Positionen
-    int distanceX = startAreaX / (amountOfPositions-1);
+    //Speichert die Distanz zwischen den einzelnen X-Positionen falls amountOfPositions != 1
+    int distanceX = 0;
     switch(amountOfPositions){
         case 1:
             //Weist Position Startwert zu
@@ -219,6 +219,8 @@ void Drive::calculatePositions(){
         case 3:
         case 5:
         case 7:
+        //Berechnet die Distanz zwischen den einzelnen X-Positionen
+        distanceX = startAreaX / (amountOfPositions-1);
         for(int i = 0; i < amountOfPositions; i++){
             //Weist X-Positionen Koordinate mit gleichem Abstand zu
             positionsX[i] = startAreaXOffset + distanceX * i;
