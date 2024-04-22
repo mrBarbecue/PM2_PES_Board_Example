@@ -4,6 +4,11 @@
 #define PinEncoderLiftWheelA PB_ENC_A_M3
 #define PinEncoderLiftWheelB PB_ENC_B_M3
 
+//Mechanischer Endschalter (NC), wann sich das Schaufelrad in der unteren Endlage befindet
+#define PinWheelLowerPosition PB_D1
+
+//Ausgang um Schaufelrad anzusteuern
+#define PinMotorWheel PB_D2
 
 /*
 MotorLiftWheel.setVelocity(MotorLiftWheel.getMaxVelocity() * 0.5f); halbe Geschwindigkeit
@@ -15,25 +20,25 @@ MotorLiftWheel.setRotation(3.0f);
 Mining::Mining() :
     MotorLiftWheel(PinMotorLiftWheel, PinEncoderLiftWheelA, PinEncoderLiftWheelB, 31.25f, 450.0f/12.0f, 12.0f),
     //MotorLiftWheel(PinMotorLiftWheel, PinEncoderLiftWheelA, PinEncoderLiftWheelB, 100.0f, 140.0f/12.0f, 12.0f),
-    wheelLowerPosition(PB_D1),  //Endschalter ist NC
-    motorWheel(PB_D2)
+    WheelLowerPosition(PinWheelLowerPosition),  //Endschalter ist NC
+    MotorWheel(PinMotorWheel)
 {
     // enable the motion planner for smooth movement
     MotorLiftWheel.enableMotionPlanner(true);
     // limitiert Maximumgeschwindigkeit
     MotorLiftWheel.setMaxVelocity(MotorLiftWheel.getMaxPhysicalVelocity() * maxVelocity);
 
-    wheelLowerPosition.mode(PullDown);
+    WheelLowerPosition.mode(PullDown);
 }
 
 void Mining::spinWheel(bool enable){      //Dreht Schaufelrad, int enable -> Dreht falls true, Stoppt falls false
-    motorWheel.write(enable);
+    MotorWheel.write(enable);
 }
 
 void Mining::initializeMotorLiftWheel(){  //Nullt den Encoder des Motors MotorLiftWheel
     printf("initializeMotorLiftWheel\n");
     MotorLiftWheel.setVelocity(-standardVelocity); //fährt mit Standartgeschwindigkeit nach unten
-    while(wheelLowerPosition.read() == true){
+    while(WheelLowerPosition.read() == true){
         printf("%f\n",MotorLiftWheel.getRotation());
         if(MotorLiftWheel.getRotation() < (-wheelUpperPosRotation)){ //Watchdog falls Endschalter nicht angiebt
             printf("limitSwitchMissing\n");
@@ -45,7 +50,7 @@ void Mining::initializeMotorLiftWheel(){  //Nullt den Encoder des Motors MotorLi
 }
 
 bool Mining::lowerWheel(){       //Senkt Schaufelrad, rückgabewert false wenn ganz unten
-    if(wheelLowerPosition.read() == false){
+    if(WheelLowerPosition.read() == false){
         printf("wheelLowerPosition\n");
         printf("%f\n",MotorLiftWheel.getRotation() + wheelLowerPositionRotation);
         MotorLiftWheel.setVelocity(0.0f);
