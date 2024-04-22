@@ -42,7 +42,7 @@ int main(){
     const int servoTiltTime = 3000;  //Zeit (in ms) wie lange der Behälter ausgekippt werden soll
     const int delayStopWheel = 2000; //Zeit (in ms) wie lange Schaufelrad noch drehen soll um restliche perlen
                                      //in Behälter zu befördern
-    const int loopsDelayStopWheel = delayStopWheel / mainTaskPeriod; //Berechnet anzahl loops
+    //const int loopsDelayStopWheel = delayStopWheel / mainTaskPeriod; //Berechnet anzahl loops
 
     Drive Drive;
     Mining Mining;
@@ -79,8 +79,8 @@ int main(){
                         }
                     }
                     Mining.spinWheel(false);
-                    //Sobal Schaufelrad in der oberen Endlange ist, wird Schleife verlassen
-                    while(Mining.WheelToUpperPos() != 0);
+                    //Sobal Schaufelrad überhalb der Perlen ist, wird Schleife verlassen
+                    while(Mining.WheelTo10cm() != 0);
                     state = nextPos;
                     break;
                 case nextPos:
@@ -88,12 +88,10 @@ int main(){
                     state = mining;
                     break;
                 case targetContainer:
-                    int i = 0;
-                    while(Drive.toTargetContainer() != 0){
-                        ++i;
-                        if(i >= loopsDelayStopWheel)
-                            Mining.spinWheel(false);
-                    }
+                    Drive.toTargetContainer();
+                    thread_sleep_for(delayStopWheel);
+                    Mining.spinWheel(false);
+                    while(Drive.toTargetContainer());
                     Container.tiltContainer(true);
                     thread_sleep_for(servoTiltTime);
                     Container.tiltContainer(false);
