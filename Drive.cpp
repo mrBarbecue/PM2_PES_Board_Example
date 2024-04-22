@@ -38,22 +38,31 @@ Drive::Drive() :
 }
 
 void Drive::calculatePositions(){
-    //Speichert die Distanz zwischen den einzelnen X-Positionen falls amountOfPositions != 1
-    int distanceX = 0;
+    bool calculatePos = false; //wird bei 3,5 und 7 true gesetzt um in diesen Fällen die Positionen zu berechnen
     switch(amountOfPositions){
         case 1:
             currentPosition = 0;
             //Weist Position Startwert zu
             positionsX[0] = startPosX;
             positionsY[0] = startAreaYOffset;
+            printf("Position1: (%d,%d)\n", positionsX[0], positionsY[0]);
             break;
         case 3:
         case 5:
             currentPosition = 1;
+            calculatePos = true;
+            break;
         case 7:
             currentPosition = 3;
+            calculatePos = true;
+            break;
+        default:
+            printf("Eingabe amountOfPositions ungueltig\n");
+            break;
+    }
+    if(calculatePos){
         //Berechnet die Distanz zwischen den einzelnen X-Positionen
-        distanceX = startAreaX / (amountOfPositions-1);
+        int distanceX = startAreaX / (amountOfPositions-1);
         for(int i = 0; i < amountOfPositions; i++){
             //Weist X-Positionen Koordinate mit gleichem Abstand zu
             positionsX[i] = startAreaXOffset + distanceX * i;
@@ -67,10 +76,6 @@ void Drive::calculatePositions(){
             }
             printf("Position%d: (%d,%d)\n", i, positionsX[i], positionsY[i]);
         }
-        break;
-        default:
-            printf("Eingabe amountOfPositions ungueltig\n");
-            break;
     }
 } 
 
