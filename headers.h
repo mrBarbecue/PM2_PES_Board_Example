@@ -6,6 +6,7 @@
 #include "pm2_drivers/DebounceIn.h"
 #include "DCMotor.h"
 #include "pm2_drivers/Servo.h"
+#include "UltrasonicSensor.h"
 
 class Drive{
     private:
@@ -43,8 +44,7 @@ class Drive{
 
         const int amountOfPositions = 3; //Wieviele verschiedene Aufnahmepositionen vor Startbehälter es gibt, braucht es, um bestmögliche Verteilung vor Startbehählter zu berechnen
                                          // Mögliche Werte sind: 1,3,5,7
-        int currentPosition = -2;   //Speichert auf welcher Position beim Perlen aufnehmen sich der Roboter aktuell befindet
-                                    //-2: Startposition vor Container
+        int currentPosition = 0;   //Speichert auf welcher Position beim Perlen aufnehmen sich der Roboter aktuell befindet
                                     //-1: Zielcontainer
                                     //0-6: Vor Startcontainer, Sammelt Perlen auf
 
@@ -56,6 +56,7 @@ class Drive{
         void changeAngleRel(float angle);           //Ändert Winkel des Roboters (Relativ und in GRAD)
         bool changeAngleAbs(float angle);           //Ändert Winkel des Roboters (Absolut und in RAD), Rückgabe true wenn soll Winkel = ist Winkel
         void driveStraight(int distance);           //Wie weit der Roboter geradeaus fahren soll (Relativ)
+        void initializeAngle();                     //Stellt den Roboter Senkrecht zum Startbehälter und initialisiert den Winkel
 
     public:
         Drive();
@@ -102,14 +103,17 @@ class Mining{
 
 class Container{
     private:
+        UltrasonicSensor ContainerFull;
         Servo ServoTilt;
 
         const float servoTiltAngleMin = 0.0150f;
         const float servoTiltAngleMax = 0.1150f;
+        const float triggContainerFull = 2.0f; //Bei wieviel Abstand zum Ultraschallsensor cm der Container als voll gilt
 
     public:
         Container();
-        void tiltContainer(bool enable);   //Kippt Behälter, bool enable -> Kippt falls true
+        bool containerFull();               //Gibt true zurück, falls behälter voll ist
+        void tiltContainer(bool enable);    //Kippt Behälter, bool enable -> Kippt falls true
 };
 
 #endif

@@ -1,13 +1,14 @@
 #include "headers.h"
-
+//Pins an denen die beiden Motoren angeschlossen sind
 #define PinMotorDriveRight PB_PWM_M1
 #define PinMotorDriveLeft PB_PWM_M2
-
 #define PinEncoderMotorRightA PB_ENC_A_M1
 #define PinEncoderMotorRightB PB_ENC_B_M1
 #define PinEncoderMotorLeftA PB_ENC_A_M2
 #define PinEncoderMotorLeftB PB_ENC_B_M2
 
+//Pin an dem der optische Sensor zum erkennen ob der Roboter vor dem Container
+//steht angeschlossen ist
 #define PinInFrontOfContainer
 
 #define PI 3.1415926f
@@ -28,14 +29,11 @@ Drive::Drive() :
     MotorDriveLeft(PinMotorDriveLeft, PinEncoderMotorLeftA, PinEncoderMotorLeftB, 100.0f, 140.0f/12.0f, 12.0f),
     InFrontOfContainer(PinInFrontOfContainer)
 {                          
-    // enable the motion planner for smooth movement
-    MotorDriveLeft.enableMotionPlanner(true);
+    //Am anfang sind motionplanner für die Winkelinitialisierung ausgeschaltet
+    MotorDriveLeft.enableMotionPlanner(false);
+    MotorDriveRight.enableMotionPlanner(false);
     // limitiert Maximumgeschwindigkeit
     MotorDriveLeft.setMaxVelocity(MotorDriveLeft.getMaxPhysicalVelocity() * maxVelocity);
-
-    // enable the motion planner for smooth movement
-    MotorDriveRight.enableMotionPlanner(true);
-    // limitiert Maximumgeschwindigkeit
     MotorDriveRight.setMaxVelocity(MotorDriveRight.getMaxPhysicalVelocity() * maxVelocity);
 }
 
@@ -44,13 +42,16 @@ void Drive::calculatePositions(){
     int distanceX = 0;
     switch(amountOfPositions){
         case 1:
+            currentPosition = 0;
             //Weist Position Startwert zu
             positionsX[0] = startPosX;
             positionsY[0] = startAreaYOffset;
             break;
         case 3:
         case 5:
+            currentPosition = 1;
         case 7:
+            currentPosition = 3;
         //Berechnet die Distanz zwischen den einzelnen X-Positionen
         distanceX = startAreaX / (amountOfPositions-1);
         for(int i = 0; i < amountOfPositions; i++){
@@ -70,14 +71,39 @@ void Drive::calculatePositions(){
         default:
             printf("Eingabe amountOfPositions ungueltig\n");
             break;
-        
     }
 } 
 
+void Drive::initializeAngle(){  //Stellt den Roboter Senkrecht zum Startbehälter und initialisiert den Winkel
+    printf("initializeAngle\n");
+    //Dreht Roboter auf knapp 30°
+    while(changeAngleAbs(0.5f) != 0);
+    //Lässt roboter langsam nach rechts drehen
+    MotorDriveLeft.setVelocity(-0.3f);
+    MotorDriveRight.setVelocity(-0.3f);
+    float maxIrValue = 0; //Speichert den maximalen Wert des optischen Sensors um kürzeste Distanz zu bestimmen
+    //Wenn der neue Wert beim einlesen 3 mal hintereinander grösser ist, wird die Schlaufe verlassen
+    //Stellt sicher, dass nicht ein einziger lesefehler/Toleranz die Messung unggenau machen kann
+    for(int i = 0; i < 3; i++){  
+        while(InFrontOfContainer.read() > maxIrValue){
+            maxIrValue = InFrontOfContainer.read();
+            i = 0;
+        }
+    }
+    MotorDriveLeft.setVelocity(0.0f);
+    MotorDriveRight.setVelocity(0.0f);
+
+    MotorDriveLeft.enableMotionPlanner(true);
+    MotorDriveRight.enableMotionPlanner(true);
+
+    currentAngle = 90.0f;
+}
+
 void Drive::initializeDriveMotors(){    //Setzt Koordinaten
+    initializeAngle();
     printf("initializeDriveMotors\n");
 
-    MotorDriveLeft.setVelocity(0.5f);
+    MotorDriveLeft.setVelocity(-0.5f);
     MotorDriveRight.setVelocity(0.5f);
 
     while(InFrontOfContainer.read() <= triggBeforeContainer); //Fährt solange geradeaus, bis vor Container
@@ -94,7 +120,6 @@ void Drive::initializeDriveMotors(){    //Setzt Koordinaten
 
 void Drive::changeAngleRel(float angle){   //Berechnung in Grad und relativ
     printf("changeAngleRel: %f°\n", angle);
-
     //Berechnet Winkel zwischen [180, -180] um sich nicht unnötig weit zu drehen
     if(angle > 180.0f){
         angle -= 360.0f;
@@ -104,7 +129,7 @@ void Drive::changeAngleRel(float angle){   //Berechnung in Grad und relativ
     }
     //Berechnung anzahl Umdrehung um Roboter um entsprechenden Winkel zu drehen
     float rotationsRobot = (angle / 360.0f * axialDistance) / wheelDiameter;
-    
+
     MotorDriveLeft.setMaxVelocity(MotorDriveLeft.getMaxPhysicalVelocity() * maxVelocity * 0.25f);
     MotorDriveRight.setMaxVelocity(MotorDriveRight.getMaxPhysicalVelocity() * maxVelocity* 0.25f);
     
@@ -114,8 +139,6 @@ void Drive::changeAngleRel(float angle){   //Berechnung in Grad und relativ
     MotorDriveLeft.setMaxVelocity(MotorDriveLeft.getMaxPhysicalVelocity() * maxVelocity);
     MotorDriveRight.setMaxVelocity(MotorDriveRight.getMaxPhysicalVelocity() * maxVelocity);
 
-    //Wartet bis Bewegung fertig. Wird gemacht um currentAngle Meldung zu printen, wenn es auch stimmt
-    while(MotorDriveLeft.getVoltage() != 0.0f);
 
     currentAngle += angle; //setzt neuen Winkel
 
@@ -133,7 +156,7 @@ bool Drive::changeAngleAbs(float angle){   //Berechnung in Rad und absolut
     //Berechnung relativer Winkel und Unformung in Grad
     float relativeAngle = angle * 180.0f / PI - currentAngle;
     //Falls bereits auf diesem Winkel
-    if(relativeAngle > -0.5f && relativeAngle < 0.5f){
+    if(relativeAngle > -0.5f && relativeAngle < 0.5f && MotorDriveLeft.getVoltage() == 0.0f){
         return true;
     }
     else{
@@ -146,7 +169,7 @@ void Drive::driveStraight(int distance){
     printf("driveStraight: %d\n", distance);
     //Speichert anzahl umdrehungen für Distanz
     float rotationsDistance = distance / (wheelDiameter * PI);
-    MotorDriveLeft.setRotation(MotorDriveLeft.getRotation() + rotationsDistance);
+    MotorDriveLeft.setRotation(MotorDriveLeft.getRotation() - rotationsDistance);
     MotorDriveRight.setRotation(MotorDriveRight.getRotation() + rotationsDistance);
     //Wenn der Roboter das Ziel erreicht hat, werden die Koordinaten ausgerechnet
     while(MotorDriveLeft.getVoltage() != 0.0f);
@@ -224,27 +247,8 @@ bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem
     //Flankenerkennen wenn neu Position erreicht wurde
     int oldPosition = currentPosition;
     printf("driveToNextPosition\n");
-    //Falls der Roboter auf der Startposition steht
-    if(currentPosition == -2){
-        switch(amountOfPositions){
-            case 1:
-                printf("FEHLER: Nur 1 position\n");
-                break;
-            case 3:
-            case 5:
-                if(driveToBackwards(positionsX[2], positionsY[2])){
-                    currentPosition = 2;
-                }
-                break;
-            case 7:
-                if(driveToBackwards(positionsX[4], positionsY[4])){
-                    currentPosition = 4;
-                }
-                break;
-        }
-    }
     //Falls der Roboter beim Zielbehälter steht
-    else if(currentPosition == -1){
+    if(currentPosition == -1){
         //Fährt zur ersten Aufnahmeposition vor Startbehälter
         if(driveToForwards(positionsX[0], positionsY[0])){
             currentPosition = 0;
@@ -261,7 +265,7 @@ bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem
         //Falls auf Y-Postition "vorne"
         else{
             if(driveToBackwards(positionsX[currentPosition+1], positionsY[currentPosition+1])){
-            currentPosition = currentPosition+1;
+                currentPosition = currentPosition+1;
             }
         }
     }
