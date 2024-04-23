@@ -79,22 +79,23 @@ void Drive::calculatePositions(){
     }
 } 
 
-void Drive::initializeAngle(){  //Stellt den Roboter Senkrecht zum Startbehälter und initialisiert den Winkel
+bool Drive::initializeAngle(){  //Stellt den Roboter Senkrecht zum Startbehälter und initialisiert den Winkel
     printf("initializeAngle\n");
-    //Dreht Roboter auf knapp 30°
-    while(changeAngleAbs(0.5f) != 0);
     //Lässt roboter langsam nach rechts drehen
     MotorDriveLeft.setVelocity(-0.3f);
     MotorDriveRight.setVelocity(-0.3f);
-    float maxIrValue = 0; //Speichert den maximalen Wert des optischen Sensors um kürzeste Distanz zu bestimmen
     //Wenn der neue Wert beim einlesen 3 mal hintereinander grösser ist, wird die Schlaufe verlassen
     //Stellt sicher, dass nicht ein einziger lesefehler/Toleranz die Messung unggenau machen kann
-    for(int i = 0; i < 3; i++){  
-        while(InFrontOfContainer.read() > maxIrValue){
-            maxIrValue = InFrontOfContainer.read();
-            i = 0;
-        }
+    if(InFrontOfContainer.read() > maxIrValue){
+        maxIrValue = InFrontOfContainer.read();
+        return false;
     }
+    else{
+        return true;
+    }
+}
+
+void Drive::angleInitialized(){ //Wird aufgerufen wenn der Winkel initialisiert wurde und setzt entsprechend die Variable
     MotorDriveLeft.setVelocity(0.0f);
     MotorDriveRight.setVelocity(0.0f);
 
@@ -104,23 +105,24 @@ void Drive::initializeAngle(){  //Stellt den Roboter Senkrecht zum Startbehälte
     currentAngle = 90.0f;
 }
 
-void Drive::initializeDriveMotors(){    //Setzt Koordinaten
-    initializeAngle();
+bool Drive::initializeDriveMotors(){    //Setzt Koordinaten
     printf("initializeDriveMotors\n");
 
     MotorDriveLeft.setVelocity(-0.5f);
     MotorDriveRight.setVelocity(0.5f);
 
-    while(InFrontOfContainer.read() <= triggBeforeContainer); //Fährt solange geradeaus, bis vor Container
+    if(InFrontOfContainer.read() >= triggBeforeContainer){ //Fährt solange geradeaus, bis vor Container
+        MotorDriveLeft.setVelocity(0.0f);
+        MotorDriveRight.setVelocity(0.0f);
 
-    MotorDriveLeft.setVelocity(0.0f);
-    MotorDriveRight.setVelocity(0.0f);
+        currentPosX = startPosX;
+        currentPosY = startAreaYOffset;
 
-    currentPosX = startPosX;
-    currentPosY = startAreaYOffset;
-
-    //Berechnet Koordinaten für Perlenaufsammelpositionen
-    calculatePositions();
+        return true;
+    }
+    else{
+        return false;
+    }
 }
 
 void Drive::changeAngleRel(float angle){   //Berechnung in Grad und relativ
@@ -264,13 +266,13 @@ bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem
         //Falls auf Y-Postition "hinten"
         if(currentPosition % 2 == 0){
             if(driveToForwards(positionsX[currentPosition+1], positionsY[currentPosition+1])){
-                currentPosition = currentPosition+1;
+                currentPosition += 1;
             }
         }
         //Falls auf Y-Postition "vorne"
         else{
             if(driveToBackwards(positionsX[currentPosition+1], positionsY[currentPosition+1])){
-                currentPosition = currentPosition+1;
+                currentPosition += 1;
             }
         }
     }

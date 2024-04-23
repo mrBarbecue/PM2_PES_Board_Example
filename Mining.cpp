@@ -35,18 +35,21 @@ void Mining::spinWheel(bool enable){      //Dreht Schaufelrad, int enable -> Dre
     MotorWheel.write(enable);
 }
 
-void Mining::initializeMotorLiftWheel(){  //Nullt den Encoder des Motors MotorLiftWheel
+bool Mining::initializeMotorLiftWheel(){  //Nullt den Encoder des Motors MotorLiftWheel
     printf("initializeMotorLiftWheel\n");
-    MotorLiftWheel.setVelocity(-standardVelocity); //fährt mit Standartgeschwindigkeit nach unten
-    while(WheelLowerPosition.read() == true){
-        printf("%f\n",MotorLiftWheel.getRotation());
-        if(MotorLiftWheel.getRotation() < (-wheelUpperPosRotation)){ //Watchdog falls Endschalter nicht angiebt
-            printf("limitSwitchMissing\n");
-            break;
-        }
+    printf("%f\n",MotorLiftWheel.getRotation());
+    if(!WheelLowerPosition.read()){
+        MotorLiftWheel.setVelocity(0.0f);
+        wheelLowerPositionRotation = MotorLiftWheel.getRotation();
+        return true;
     }
-    MotorLiftWheel.setVelocity(0.0f);
-    wheelLowerPositionRotation = MotorLiftWheel.getRotation();
+    else if(MotorLiftWheel.getRotation() < (-wheelUpperPosRotation)){ //Watchdog falls Endschalter nicht angiebt
+        printf("limitSwitchMissing\n");
+    }
+    MotorLiftWheel.setVelocity(-standardVelocity); //fährt mit Standartgeschwindigkeit nach unten
+    return false;
+
+    
 }
 
 bool Mining::lowerWheel(){       //Senkt Schaufelrad, rückgabewert false wenn ganz unten

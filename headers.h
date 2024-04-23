@@ -26,6 +26,8 @@ class Drive{
         const float axialDistance = 150.0f; //Abstand der beiden Räder in mm
         const float wheelDiameter = 43.0f;  //Durchmesser der Antriebsräder in mm
 
+        float maxIrValue = 0; //Speichert den maximalen Wert des optischen Sensors um kürzeste Distanz zu bestimmen
+
         float currentAngle = 90.0f; //Speichert absoluten Winkel in Grad
 
         int positionsX[7] = {0};    //Speichert X Koordinaten der Aufnahme-Positionen des Roboters vor dem StartContainer, wird in calculatePositions berechnet
@@ -49,18 +51,21 @@ class Drive{
                                     //0-6: Vor Startcontainer, Sammelt Perlen auf
 
         void calculateCurrentPos(int distance);     //Berechnet aktuelle Koordinaten, wenn vorhin über changeAngleRel und driveStraight gefahren wurde
-        void calculatePositions();                  //Berechnet anhand Konstante amountofPositions die Koordinaten dieser Positionenen
         bool driveTo(int x, int y, bool direction); //Fährt Koordinaten an, Rückgabe true wenn bereits auf diesen Koordinate, direction 1 = geradeaus, 0 = rückwärts anfahren
         bool driveToForwards(int x, int y);         //Fährt geradeaus auf Zielkoordinaten, Rückgabewert true, falls bereits dort
         bool driveToBackwards(int x, int y);        //Fährt rückwärts auf Zielkoordinaten, Rückgabewert true, falls bereits dort
         void changeAngleRel(float angle);           //Ändert Winkel des Roboters (Relativ und in GRAD)
-        bool changeAngleAbs(float angle);           //Ändert Winkel des Roboters (Absolut und in RAD), Rückgabe true wenn soll Winkel = ist Winkel
+        
         void driveStraight(int distance);           //Wie weit der Roboter geradeaus fahren soll (Relativ)
-        void initializeAngle();                     //Stellt den Roboter Senkrecht zum Startbehälter und initialisiert den Winkel
+        
 
     public:
         Drive();
-        void initializeDriveMotors();               //Initialisiert Position des Roboters mit Sensor InFrontOfContainer und ruft calculatepositions auf
+        bool initializeAngle();                     //Stellt den Roboter Senkrecht zum Startbehälter und initialisiert den Winkel, true falls Winekl initialisiert
+        void angleInitialized();                    //Wird aufgerufen wenn der Winkel initialisiert wurde und setzt entsprechend die Variable
+        bool changeAngleAbs(float angle);           //Ändert Winkel des Roboters (Absolut und in RAD), Rückgabe true wenn soll Winkel = ist Winkel
+        void calculatePositions();                  //Berechnet anhand Konstante amountofPositions die Koordinaten dieser Positionenen
+        bool initializeDriveMotors();               //Initialisiert Position des Roboters mit Sensor InFrontOfContainer und ruft calculatepositions auf
         bool driveToNextPosition();                 //Fährt zur nächsten Position vor dem Startbehälter, Rückgabewert true Flanke, wenn dort angekommen
         bool toTargetContainer();                   //Fährt zum Zielbehälter und dreht sich auf Absolut 90°
         int getPosX();                              //Gibt aktuelle X Position zurück
@@ -94,7 +99,7 @@ class Mining{
         
     public:
         Mining();
-        void initializeMotorLiftWheel();  //Nullt den Encouder des Motors MotorLiftWheel
+        bool initializeMotorLiftWheel();  //Nullt den Encouder des Motors MotorLiftWheel, true wenn auf Endschalter
         void spinWheel(bool enable);     //Dreht Schaufelrad, bool enable -> Dreht falls true, Stoppt falls false
         bool WheelToUpperPos();           //Hebt Schaufelrad in die obere Endlage   (Volle Geschwindigkeit)
         bool WheelTo10cm();               //Senkt Schaufelrad auf 10cm    (Volle Geschwindigkeit)
