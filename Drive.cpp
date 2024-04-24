@@ -269,7 +269,10 @@ bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem
     if(currentPosition == -1){
         //Fährt zur ersten Aufnahmeposition vor Startbehälter
         if(driveToForwards(positionsX[0], positionsY[0])){
-            currentPosition = 0;
+            //Stellt Roboter senkrecht zu Starbehälter
+            if(changeAngleAbs(PI/2)){
+                currentPosition = 0;
+            }
         }
     }
     //Falls der Roboter bereits auf einer Position vor dem Startbehälter steht und er weiter aufsammeln muss
