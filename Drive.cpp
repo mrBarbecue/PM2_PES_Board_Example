@@ -268,10 +268,10 @@ bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem
     //Falls der Roboter beim Zielbehälter steht
     if(currentPosition == -1){
         //Fährt zur ersten Aufnahmeposition vor Startbehälter
-        if(driveToForwards(positionsX[0], positionsY[0])){
+        if(driveToForwards(positionsX[deletedPositions+1], positionsY[deletedPositions+1])){
             //Stellt Roboter senkrecht zu Starbehälter
             if(changeAngleAbs(PI/2)){
-                currentPosition = 0;
+                currentPosition = deletedPositions+1;
             }
         }
     }
@@ -299,4 +299,8 @@ bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem
     else{
         return false;
     }
+}
+
+void Drive::deleteCurrentPos(){ //Löscht aktuelle und niedrigere Positionen, bei denen bereits Perlen aufgesammelt wurden
+    deletedPositions = currentPosition;
 }

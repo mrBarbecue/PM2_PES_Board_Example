@@ -60,6 +60,10 @@ class Drive{
         int currentPosition = 0;    //Speichert auf welcher Position beim Perlen aufnehmen sich der Roboter aktuell befindet
                                     //-1: Zielcontainer
                                     //0-6: Vor Startcontainer, Sammelt Perlen auf
+        int deletedPositions = -1;  //Speichert welche Positionen nicht mehr angefahren wird
+                                    //-1: alle Positionen sind verfügbar
+                                    //0: Position0 ist nicht mehr verfügbar
+                                    //1: ...
 
         void changeAngleRel(float angle);           //Ändert Winkel des Roboters (Relativ und in GRAD)
         bool driveStraight(int distance);           //Wie weit der Roboter geradeaus fahren soll (Relativ)
@@ -76,6 +80,7 @@ class Drive{
         void calculatePositions();                  //Berechnet anhand Konstante amountofPositions die Koordinaten dieser Positionenen
         bool driveToNextPosition();                 //Fährt zur nächsten Position vor dem Startbehälter, Rückgabewert true Flanke, wenn dort angekommen
         bool toTargetContainer();                   //Fährt zum Zielbehälter und dreht sich auf Absolut 90°
+        void deleteCurrentPos();                    //Löscht aktuelle und niedrigere Positionen, bei denen bereits Perlen aufgesammelt wurden
 };
 
 class Mining{

@@ -41,6 +41,12 @@ int main(){
                                         //Stellt sicher, dass nicht ein einziger lesefehler/Toleranz die Messung ungenau machen kann
     int counterInitializeAngel = 0;     //Zählt wie oft der neue IR-Sensorwert den alten überstieg
 
+    const float driveToTargetContainer = 4.5f;  //Nach wievielen Minuten der Roboter zum Zielbehälter fahren soll
+                                                //Sorgt dafür, dass sicher nach 5min ein paar Perlen in Zielbehälter sind
+    const int loopsDriveToTargetContainer = driveToTargetContainer * 60000 / mainTaskPeriod;   //Berechnet anzahl durchläufe bis Zeit von driveToTargetContainer
+                                                                                                //vergangen ist
+    int counterDriveToTargetContainer = 0;   //Zählt loops für driveToTargetContainer
+
     //Erstellt Objekte, da es von allen Klassen je nur ein Objekt braucht, heissen sie gleich wie ihre Klassen
     Drive Drive;
     Mining Mining;
@@ -54,6 +60,13 @@ int main(){
 
     while(true){
         MainTaskTimer.reset();
+
+        counterDriveToTargetContainer++; //Zählt jeden while durchlauf
+        //Wenn Zeit in Minuten von driveToTargetContainer vorbei sind, fährt der Roboter zum Zielbehälter um restliche perlen auszuladen
+        if(counterDriveToTargetContainer == loopsDriveToTargetContainer && state != wheelToUpperPos && state != targetContainer){
+
+            state = wheelToUpperPos;
+        }
 
         if(executeMainTask){
 
@@ -91,6 +104,7 @@ int main(){
                         }
                         if(counterInitializeAngel >= triggInitializeAngle){
                             Drive.angleInitialized();
+                            counterInitializeAngel = 0; //Zähler zurück setzten
                             state = initializeDriveMotors;
                         }
                     }
@@ -149,6 +163,7 @@ int main(){
                     break;
 
                 case targetContainer:
+                    Drive.deleteCurrentPos();
                     if(Drive.toTargetContainer()){
                         //Kippt den Behälter
                         Container.tiltContainer(true);
@@ -159,6 +174,7 @@ int main(){
                             //Fährt den Behälter wieder ein
                             Container.tiltContainer(false);
                             state = nextPos;
+                            counterServoTiltTime = 0; //Zähler zurücksetzten
                         }
                     }
                     break;
@@ -175,6 +191,7 @@ int main(){
                 counterInitializeAngel = 0;
                 driveMotorsInitialized = false;
                 counterServoTiltTime = 0;
+                counterDriveToTargetContainer = 0;
 
                 state = initializeLiftWheel;
             }
