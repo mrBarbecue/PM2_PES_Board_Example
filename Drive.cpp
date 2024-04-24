@@ -48,8 +48,11 @@ void Drive::calculatePositions(){
             printf("Position1: (%d,%d)\n", positionsX[0], positionsY[0]);
             break;
         case 3:
-        case 5:
             currentPosition = 1;
+            calculatePos = true;
+            break;
+        case 5:
+            currentPosition = 2;
             calculatePos = true;
             break;
         case 7:
@@ -98,11 +101,10 @@ bool Drive::initializeAngle(){  //Stellt den Roboter Senkrecht zum Startbehälte
 void Drive::angleInitialized(){ //Wird aufgerufen wenn der Winkel initialisiert wurde und setzt entsprechend die Variable
     MotorDriveLeft.setVelocity(0.0f);
     MotorDriveRight.setVelocity(0.0f);
-
     MotorDriveLeft.enableMotionPlanner(true);
     MotorDriveRight.enableMotionPlanner(true);
 
-    currentAngle = 90.0f;
+    currentAngle = 90.0f + angleOffset;
 }
 
 bool Drive::initializeDriveMotors(){    //Setzt Koordinaten
@@ -137,8 +139,8 @@ void Drive::changeAngleRel(float angle){   //Berechnung in Grad und relativ
     //Berechnung anzahl Umdrehung um Roboter um entsprechenden Winkel zu drehen
     float rotationsRobot = (angle / 360.0f * axialDistance) / wheelDiameter;
 
-    MotorDriveLeft.setMaxVelocity(MotorDriveLeft.getMaxPhysicalVelocity() * maxVelocity * 0.25f);
-    MotorDriveRight.setMaxVelocity(MotorDriveRight.getMaxPhysicalVelocity() * maxVelocity* 0.25f);
+    MotorDriveLeft.setMaxVelocity(MotorDriveLeft.getMaxPhysicalVelocity() * maxVelocity * 0.5f);
+    MotorDriveRight.setMaxVelocity(MotorDriveRight.getMaxPhysicalVelocity() * maxVelocity* 0.5f);
     
     MotorDriveLeft.setRotation(MotorDriveLeft.getRotation() + rotationsRobot);
     MotorDriveRight.setRotation(MotorDriveRight.getRotation() + rotationsRobot);
@@ -172,15 +174,25 @@ bool Drive::changeAngleAbs(float angle){   //Berechnung in Rad und absolut
     }
 }
 
-void Drive::driveStraight(int distance){
+bool Drive::driveStraight(int distance){
     printf("driveStraight: %d\n", distance);
     //Speichert anzahl umdrehungen für Distanz
-    float rotationsDistance = distance / (wheelDiameter * PI);
-    MotorDriveLeft.setRotation(MotorDriveLeft.getRotation() - rotationsDistance);
-    MotorDriveRight.setRotation(MotorDriveRight.getRotation() + rotationsDistance);
-    //Wenn der Roboter das Ziel erreicht hat, werden die Koordinaten ausgerechnet
-    while(MotorDriveLeft.getVoltage() != 0.0f);
-    //calculateCurrentPos(distance);
+    printf("driveStraightVoltage: %f\n", MotorDriveLeft.getVoltage());
+    //Falls die Motoren gerade nicht angesteuert sind und driveStraight auch nicht gerade angekommen ist
+    if(MotorDriveLeft.getVoltage() == 0.0f && !isDriving){
+        float rotationsDistance = distance / (wheelDiameter * PI);
+        MotorDriveLeft.setRotation(MotorDriveLeft.getRotation() - rotationsDistance);
+        MotorDriveRight.setRotation(MotorDriveRight.getRotation() + rotationsDistance);
+        isDriving = true;
+        return false;
+    }
+    else if(MotorDriveLeft.getVoltage() == 0.0f && isDriving){
+        isDriving = false;
+        return true;
+    }
+    else{
+        return false;
+    }
 }
 
 bool Drive::driveTo(int x, int y, bool direction){
@@ -193,10 +205,6 @@ bool Drive::driveTo(int x, int y, bool direction){
         float inverseAngle = 0.0f;
         int inverseDirection = 0;
     }
-    // +---> X
-    // |
-    // v
-    // Y
     printf("targetPosition: (%d, %d)\n", x, y);
     int changeInPositionY = currentPosY - y;
     int changeInPositionX = x - currentPosX;
@@ -211,7 +219,10 @@ bool Drive::driveTo(int x, int y, bool direction){
         //Berechnet Winkel in Rad (Absolut) und dreht sich entsprechend
         if(changeAngleAbs(atan(changeInPositionY / changeInPositionX) + inverseAngle)){
             //Sobald der Roboter mit richtigem Winkel steht, fährt er los
-            driveStraight(sqrt(pow(changeInPositionY, 2) + pow(changeInPositionX, 2)) * inverseDirection);
+            if(driveStraight(sqrt(pow(changeInPositionY, 2) + pow(changeInPositionX, 2)) * inverseDirection)){
+                currentPosX = x;
+                currentPosY = y;
+            }
         }
         return false;
     }
@@ -285,46 +296,4 @@ bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem
     else{
         return false;
     }
-}
-
-void Drive::calculateCurrentPos(int distance){ //Berechnung in rad
-    currentPosX += cos(currentAngle * 180.0f / PI) * distance;
-    currentPosY -= sin(currentAngle * 180.0f / PI) * distance;
-    printf("currentPos: (%d, %d)\n", currentPosX, currentPosY);
-
-    /*
-    //1. Quadrant (+x, -y)
-    if(currentAngle >= 0 && currentAngle < 90){
-        currentPosX += cos(lastAngle * 180.0f / PI) * distance;
-        currentPosY -= sin(lastAngle * 180.0f / PI) * distance;
-    }
-    //2. Quadrant (-x, -y)
-    else if(currentAngle >= 90 && currentAngle < 180){
-        currentPosX -= sin((lastAngle-90) * 180.0f / PI) * distance;
-        currentPosY -= cos((lastAngle-90) * 180.0f / PI) * distance;
-    }
-    //3. Quadrant (-x, +y)
-    else if(currentAngle >= 180 && currentAngle < 270){
-        currentPosX -= cos((lastAngle-180) * 180.0f / PI) * distance;
-        currentPosY += sin((lastAngle-180) * 180.0f / PI) * distance;
-    }
-    //4. Quadrant (+x, +y)
-    else if(currentAngle >= 270 && currentAngle < 360){
-        currentPosX += sin((lastAngle-270) * 180.0f / PI) * distance;
-        currentPosY += cos((lastAngle-270) * 180.0f / PI) * distance;
-    }
-    else{
-        printf("currentAngle oder calculatePos falsch berechnet\n");
-    }
-    */
-}
-
-int Drive::getPosX(){
-    printf("currentPosX: %d\n", currentPosX);
-    return currentPosX;
-}
-
-int Drive::getPosY(){
-    printf("currentPosY: %d\n", currentPosY);
-    return currentPosY;
 }

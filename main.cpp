@@ -34,6 +34,9 @@ int main(){
     int state = 0;
 
     const int servoTiltTime = 3000;     //Zeit (in ms) wie lange der Behälter ausgekippt werden soll
+    const int loopsServoTiltTime = servoTiltTime / mainTaskPeriod; //Berechnet anzahl durchläufe in main bis servoTiltTime vergangen ist
+    int counterServoTiltTime = 0;   //Zählt loops für servoTiltTime
+
     const int triggInitializeAngle = 3; //Wieviel mal der Wert des IR Sensor beim Winkel Initialisieren unterschritten werden soll, bis abgebrochen wird
                                         //Stellt sicher, dass nicht ein einziger lesefehler/Toleranz die Messung ungenau machen kann
     int counterInitializeAngel = 0;     //Zählt wie oft der neue IR-Sensorwert den alten überstieg
@@ -81,7 +84,13 @@ int main(){
                         if(Drive.initializeAngle()){
                             counterInitializeAngel++;
                         }
+                        else{
+                            //Setzt den Zähler zurück um sicherzustellen, dass der IR-Sensor drei mal hintereinander grössere Werte liefert
+                            //und nich einfach insgesamt 3 mal
+                            counterInitializeAngel = 0;
+                        }
                         if(counterInitializeAngel >= triggInitializeAngle){
+                            Drive.angleInitialized();
                             state = initializeDriveMotors;
                         }
                     }
@@ -143,11 +152,14 @@ int main(){
                     if(Drive.toTargetContainer()){
                         //Kippt den Behälter
                         Container.tiltContainer(true);
-                        //Wartet
-                        thread_sleep_for(servoTiltTime);
-                        //Fährt den Behälter wieder ein
-                        Container.tiltContainer(false);
-                        state = nextPos;
+                        //Zählt loops
+                        counterServoTiltTime++;
+                        //Wenn zeit vergange ist, wird der Behälter wieder eingefahren
+                        if(counterServoTiltTime >= loopsServoTiltTime){
+                            //Fährt den Behälter wieder ein
+                            Container.tiltContainer(false);
+                            state = nextPos;
+                        }
                     }
                     break;
             }
@@ -162,6 +174,7 @@ int main(){
                 robotInPosition = false;
                 counterInitializeAngel = 0;
                 driveMotorsInitialized = false;
+                counterServoTiltTime = 0;
 
                 state = initializeLiftWheel;
             }
