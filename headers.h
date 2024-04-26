@@ -26,11 +26,6 @@ class Drive{
         const float axialDistance = 150.0f; //Abstand der beiden Räder in mm
         const float wheelDiameter = 43.0f;  //Durchmesser der Antriebsräder in mm
 
-        float maxIrValue = 0; //Speichert den maximalen Wert des optischen Sensors um kürzeste Distanz zu bestimmen
-
-        const float angleOffset = 0;    //Offset zum Winkel, wird benötigt, wenn IR-Sensor nicht perfekt mittig Montiert ist
-                                        //positiv: Roboter dreht sich zu weit nach links
-                                        //negativ: Rovoter dreht sich zu weit nach rechts 
         float currentAngle = 90.0f;     //Speichert absoluten Winkel in Grad
         
         //Koordinatensystem:
@@ -38,25 +33,25 @@ class Drive{
         // |
         // v
         // Y
-        int positionsX[7] = {0};    //Speichert X Koordinaten der Aufnahme-Positionen des Roboters vor dem StartContainer, wird in calculatePositions berechnet
-        int positionsY[7] = {0};
+        int positionsX[10] = {0};    //Speichert X Koordinaten der Aufnahme-Positionen des Roboters vor dem StartContainer, wird in calculatePositions berechnet
+        int positionsY[10] = {0};
         const int startAreaX = 180;                             //Wie breit der Bereich vor dem Startcontainer ist, wo sich der Roboter hinstellen darf
-        const int startAreaY = 50;
+        const int startAreaY = 70;
         const int startAreaXOffset = (250 - startAreaX) / 2;    //Abstand der StartAreaX zum Koordinatenursprung (0,0) bei der linken unteren Ecke des Startbehälters (Zentriert)
-        const int startAreaYOffset = 85;
-        const int startPosX = 125;                              //Wieviele mm vor dem Startbehälter sich die Räder befinden beim Initialisieren (Rädermittelpunkt ist Koordinatenursprung von Roboter)
+        const int startAreaYOffset = 40;
+        const int startPosX = 70;                              //Wieviele mm vor dem Startbehälter sich die Räder befinden beim Initialisieren (Rädermittelpunkt ist Koordinatenursprung von Roboter)
         const float triggBeforeContainer = 2.5f / 3.3f;         //2.5V Spannung, wird normiert. Schwellwert ab wann der Roboter vor dem Container steht (bezogen auf Sensor)
 
         bool isDriving = false; //Flankenerkennung ob Roboter gerade am fahren ist
 
-        const int posTargetContainerX = 1025-150; //Koordinaten wohin der Roboter beim anfahren vom Zielbehälter hinfährt (mit Offset)
+        const int posTargetContainerX = 1025-180; //Koordinaten wohin der Roboter beim anfahren vom Zielbehälter hinfährt (mit Offset)
         const int posTargetContainerY = 250;
 
         int currentPosX; //Speicher aktuelle X position
         int currentPosY; //Speichert aktuelle Y position
 
-        const int amountOfPositions = 7; //Wieviele verschiedene Aufnahmepositionen vor Startbehälter es gibt, braucht es, um bestmögliche Verteilung vor Startbehälter zu berechnen
-                                         // Mögliche Werte sind: 1,3,5,7
+        const int amountOfPositions = 7;    //Wieviele verschiedene Aufnahmepositionen vor Startbehälter es gibt, braucht es, um bestmögliche Verteilung vor Startbehälter zu berechnen
+                                            //Max. 10
         int currentPosition = 0;    //Speichert auf welcher Position beim Perlen aufnehmen sich der Roboter aktuell befindet
                                     //-1: Zielcontainer
                                     //0-6: Vor Startcontainer, Sammelt Perlen auf
@@ -73,8 +68,6 @@ class Drive{
     
     public:
         Drive();
-        bool initializeAngle();                     //Stellt den Roboter Senkrecht zum Startbehälter und initialisiert den Winkel, true falls Winekl initialisiert
-        void angleInitialized();                    //Wird aufgerufen wenn der Winkel initialisiert wurde und setzt entsprechend die Variable
         bool changeAngleAbs(float angle);           //Ändert Winkel des Roboters (Absolut und in RAD), Rückgabe true wenn soll Winkel = ist Winkel
         bool initializeDriveMotors();               //Initialisiert Position des Roboters mit Sensor InFrontOfContainer und ruft calculatepositions auf
         void calculatePositions();                  //Berechnet anhand Konstante amountofPositions die Koordinaten dieser Positionenen

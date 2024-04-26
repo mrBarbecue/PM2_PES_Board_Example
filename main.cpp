@@ -29,17 +29,13 @@ int main(){
 
     //Verschiedene Zustände in switch-case
     enum states{
-    initializeLiftWheel, initializeAngle, initializeDriveMotors, mining, wheelTo10cm, wheelToUpperPos, nextPos, targetContainer};
+    initializeLiftWheel, initializeDriveMotors, mining, wheelTo10cm, wheelToUpperPos, nextPos, targetContainer};
     //Speichert die Zustände in switch-case
     int state = 0;
 
     const int servoTiltTime = 3000;     //Zeit (in ms) wie lange der Behälter ausgekippt werden soll
     const int loopsServoTiltTime = servoTiltTime / mainTaskPeriod; //Berechnet anzahl durchläufe in main bis servoTiltTime vergangen ist
     int counterServoTiltTime = 0;   //Zählt loops für servoTiltTime
-
-    const int triggInitializeAngle = 3; //Wieviel mal der Wert des IR Sensor beim Winkel Initialisieren unterschritten werden soll, bis abgebrochen wird
-                                        //Stellt sicher, dass nicht ein einziger lesefehler/Toleranz die Messung ungenau machen kann
-    int counterInitializeAngel = 0;     //Zählt wie oft der neue IR-Sensorwert den alten überstieg
 
     const float driveToTargetContainer = 4.5f;  //Nach wievielen Minuten der Roboter zum Zielbehälter fahren soll
                                                 //Sorgt dafür, dass sicher nach 5min ein paar Perlen in Zielbehälter sind
@@ -53,7 +49,6 @@ int main(){
     Container Container;
 
     bool liftWheelInitialized = false;      //Speichert ob der Motor zum heben des Rads bereits initialisiert wurde
-    bool robotInPosition = false;           //true falls der Roboter in Position steht um den Winkel zu initialisieren
     bool driveMotorsInitialized = false;    //Speichert on driveMotors bereits initialisiert wurden, wird benötigt,
                                             //dass wegen der ungenauigkeit des IR-Sensors der Roboter nach dem
                                             //anhalten nicht erneut los fährt
@@ -64,7 +59,6 @@ int main(){
         counterDriveToTargetContainer++; //Zählt jeden while durchlauf
         //Wenn Zeit in Minuten von driveToTargetContainer vorbei sind, fährt der Roboter zum Zielbehälter um restliche perlen auszuladen
         if(counterDriveToTargetContainer == loopsDriveToTargetContainer && state != wheelToUpperPos && state != targetContainer){
-
             state = wheelToUpperPos;
         }
 
@@ -80,31 +74,6 @@ int main(){
                     else{
                         //Sobal Schaufelrad in der oberen Endlange ist, wird dieser case verlassen
                         if(Mining.WheelToUpperPos()){
-                            state = initializeAngle;
-                        }
-                    }
-                    break;
-
-                case initializeAngle:
-                    //Richtet den Roboter Senkrecht zum startContainer um später beim Fahren eine möglichst kleine Abweichung zu haben
-                    if(!robotInPosition){
-                        //Dreht Roboter auf knapp 30°
-                        robotInPosition = Drive.changeAngleAbs(0.5f);
-                    }
-                    else{
-                        //Wenn der neue Wert des IR-Sensors beim einlesen 3 mal hintereinander grösser ist als der alte, wird die Schlaufe verlassen
-                        //Stellt sicher, dass nicht ein einziger lesefehler/Toleranz die Messung unggenau machen kann
-                        if(Drive.initializeAngle()){
-                            counterInitializeAngel++;
-                        }
-                        else{
-                            //Setzt den Zähler zurück um sicherzustellen, dass der IR-Sensor drei mal hintereinander grössere Werte liefert
-                            //und nich einfach insgesamt 3 mal
-                            counterInitializeAngel = 0;
-                        }
-                        if(counterInitializeAngel >= triggInitializeAngle){
-                            Drive.angleInitialized();
-                            counterInitializeAngel = 0; //Zähler zurück setzten
                             state = initializeDriveMotors;
                         }
                     }
@@ -129,7 +98,6 @@ int main(){
                     Mining.spinWheel(true);
                     //Falls das Schaufelrad am Boden ankommt, wird das Schaufelrad ausgeschaltet und eine andere Aufsammelposition angefahren
                     if(Mining.lowerWheel()){
-                        //Mining.spinWheel(false);
                         state = wheelTo10cm;
                     }
                     //Während Perlen aufgeladen werden, wird gecheckt ob der Container voll ist
@@ -163,7 +131,7 @@ int main(){
                     break;
 
                 case targetContainer:
-                    Drive.deleteCurrentPos();
+                    Drive.deleteCurrentPos(); //Löscht Aufsammel-Positonen die bereits angefahren wurden
                     if(Drive.toTargetContainer()){
                         //Kippt den Behälter
                         Container.tiltContainer(true);
@@ -187,8 +155,6 @@ int main(){
                 
                 EnableMotors = false;
                 liftWheelInitialized = false;
-                robotInPosition = false;
-                counterInitializeAngel = 0;
                 driveMotorsInitialized = false;
                 counterServoTiltTime = 0;
                 counterDriveToTargetContainer = 0;

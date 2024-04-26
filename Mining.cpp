@@ -46,7 +46,7 @@ bool Mining::initializeMotorLiftWheel(){  //Nullt den Encoder des Motors MotorLi
     else if(MotorLiftWheel.getRotation() < (-wheelUpperPosRotation)){ //Watchdog falls Endschalter nicht angiebt
         printf("limitSwitchMissing\n");
     }
-    MotorLiftWheel.setVelocity(-standardVelocity); //fährt mit Standartgeschwindigkeit nach unten
+    MotorLiftWheel.setVelocity(-maxVelocity); //fährt mit Standartgeschwindigkeit nach unten
     return false;
 
     

@@ -30,43 +30,24 @@ Drive::Drive() :
     InFrontOfContainer(PinInFrontOfContainer)
 {                          
     //Am anfang sind motionplanner für die Winkelinitialisierung ausgeschaltet
-    MotorDriveLeft.enableMotionPlanner(false);
-    MotorDriveRight.enableMotionPlanner(false);
+    MotorDriveLeft.enableMotionPlanner(true);
+    MotorDriveRight.enableMotionPlanner(true);
     // limitiert Maximumgeschwindigkeit
     MotorDriveLeft.setMaxVelocity(MotorDriveLeft.getMaxPhysicalVelocity() * maxVelocity);
     MotorDriveRight.setMaxVelocity(MotorDriveRight.getMaxPhysicalVelocity() * maxVelocity);
 }
 
 void Drive::calculatePositions(){
-    bool calculatePos = false; //wird bei 3,5 und 7 true gesetzt um in diesen Fällen die Positionen zu berechnen
-    switch(amountOfPositions){
-        case 1:
-            currentPosition = 0;
-            //Weist Position Startwert zu
-            positionsX[0] = startPosX;
-            positionsY[0] = startAreaYOffset;
-            printf("Position1: (%d,%d)\n", positionsX[0], positionsY[0]);
-            break;
-        case 3:
-            currentPosition = 1;
-            calculatePos = true;
-            break;
-        case 5:
-            currentPosition = 2;
-            calculatePos = true;
-            break;
-        case 7:
-            currentPosition = 3;
-            calculatePos = true;
-            break;
-        default:
-            printf("Eingabe amountOfPositions ungueltig\n");
-            break;
+    if(amountOfPositions == 1){
+        //Weist Position Startwert zu
+        positionsX[0] = startPosX;
+        positionsY[0] = startAreaYOffset;
+        printf("Position1: (%d,%d)\n", positionsX[0], positionsY[0]);
     }
-    if(calculatePos){
+    else if(amountOfPositions > 1 && amountOfPositions <= 10){
         //Berechnet die Distanz zwischen den einzelnen X-Positionen
         int distanceX = startAreaX / (amountOfPositions-1);
-        for(int i = 0; i < amountOfPositions; i++){
+        for(int i = 1; i < amountOfPositions+1; i++){
             //Weist X-Positionen Koordinate mit gleichem Abstand zu
             positionsX[i] = startAreaXOffset + distanceX * i;
             if(i % 2 == 0){
@@ -80,32 +61,10 @@ void Drive::calculatePositions(){
             printf("Position%d: (%d,%d)\n", i, positionsX[i], positionsY[i]);
         }
     }
-} 
-
-bool Drive::initializeAngle(){  //Stellt den Roboter Senkrecht zum Startbehälter und initialisiert den Winkel
-    printf("initializeAngle\n");
-    //Lässt roboter langsam nach rechts drehen
-    MotorDriveLeft.setVelocity(-0.3f);
-    MotorDriveRight.setVelocity(-0.3f);
-    //Wenn der neue Wert beim einlesen 3 mal hintereinander grösser ist, wird die Schlaufe verlassen
-    //Stellt sicher, dass nicht ein einziger lesefehler/Toleranz die Messung unggenau machen kann
-    if(InFrontOfContainer.read() > maxIrValue){
-        maxIrValue = InFrontOfContainer.read();
-        return false;
-    }
     else{
-        return true;
+        printf("FEHLER: Eingabe amountOfPositions ungueltig\n");
     }
-}
-
-void Drive::angleInitialized(){ //Wird aufgerufen wenn der Winkel initialisiert wurde und setzt entsprechend die Variable
-    MotorDriveLeft.setVelocity(0.0f);
-    MotorDriveRight.setVelocity(0.0f);
-    MotorDriveLeft.enableMotionPlanner(true);
-    MotorDriveRight.enableMotionPlanner(true);
-
-    currentAngle = 90.0f + angleOffset;
-}
+} 
 
 bool Drive::initializeDriveMotors(){    //Setzt Koordinaten
     printf("initializeDriveMotors\n");
