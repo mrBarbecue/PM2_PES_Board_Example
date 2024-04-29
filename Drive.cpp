@@ -9,7 +9,7 @@
 
 //Pin an dem der optische Sensor zum erkennen ob der Roboter vor dem Container
 //steht angeschlossen ist
-#define PinInFrontOfContainer
+#define PinInFrontOfContainer PC_2
 
 #define PI 3.1415926f
 
@@ -81,9 +81,7 @@ bool Drive::initializeDriveMotors(){    //Setzt Koordinaten
 
         return true;
     }
-    else{
-        return false;
-    }
+    return false;
 }
 
 void Drive::changeAngleRel(float angle){   //Berechnung in Grad und relativ
@@ -149,9 +147,7 @@ bool Drive::driveStraight(int distance){
         isDriving = false;
         return true;
     }
-    else{
-        return false;
-    }
+    return false;
 }
 
 bool Drive::driveTo(int x, int y, bool direction){
@@ -191,18 +187,14 @@ bool Drive::driveToForwards(int x, int y){
     if(driveTo(x, y, true)){
         return true;
     }
-    else{
-        return false;
-    }
+    return false;
 }
 
 bool Drive::driveToBackwards(int x, int y){
     if(driveTo(x, y, false)){
         return true;
     }
-    else{
-        return false;
-    }
+    return false;
 
 }
 
@@ -215,9 +207,7 @@ bool Drive::toTargetContainer(){         //Fährt zum Zielbehälter
             currentPosition = -1;
         }
     }
-    else{
-        return false;
-    }
+    return false;
 }
 
 bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem Startbehälter
@@ -262,4 +252,20 @@ bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem
 
 void Drive::deleteCurrentPos(){ //Löscht aktuelle und niedrigere Positionen, bei denen bereits Perlen aufgesammelt wurden
     deletedPositions = currentPosition;
+}
+
+//Für Tests
+
+float Drive::getIrSensor(){
+    return InFrontOfContainer.read();
+}
+
+float Drive::rotateRightWheel(){
+    MotorDriveRight.setRotation(300);
+    return MotorDriveRight.getVoltage();
+}
+
+float Drive::rotateLeftWheel(){
+    MotorDriveLeft.setRotation(300);
+    return MotorDriveLeft.getEncoderCount();
 }

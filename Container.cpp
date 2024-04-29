@@ -16,9 +16,7 @@ bool Container::containerFull(){
     if(ContainerFull.read() <= triggContainerFull){
         return true;
     }
-    else{
-        return false;
-    }
+    return false;
 }
 
 void Container::tiltContainer(bool enable){   //Kippt Behälter, int enable -> Kippt falls true

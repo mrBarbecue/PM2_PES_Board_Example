@@ -55,13 +55,12 @@ int main(){
 
     while(true){
         MainTaskTimer.reset();
-
+        EnableMotors = true;
         counterDriveToTargetContainer++; //Zählt jeden while durchlauf
         //Wenn Zeit in Minuten von driveToTargetContainer vorbei sind, fährt der Roboter zum Zielbehälter um restliche perlen auszuladen
         if(counterDriveToTargetContainer == loopsDriveToTargetContainer && state != wheelToUpperPos && state != targetContainer){
             state = wheelToUpperPos;
         }
-
         if(executeMainTask){
 
             switch(state){
@@ -92,7 +91,6 @@ int main(){
                         }
                     }
                     break;
-
                 case mining:
                     //Lässt Schaufelrad drehen
                     Mining.spinWheel(true);
@@ -162,6 +160,7 @@ int main(){
                 state = initializeLiftWheel;
             }
         }
+        
         //read timer and make the main thread sleep for the remaining time span (non blocking)
         int MainTaskElapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(MainTaskTimer.elapsed_time()).count();
         thread_sleep_for(mainTaskPeriod - MainTaskElapsedTime);

@@ -23,7 +23,7 @@ class Drive{
         const float voltageMax = 12.0f;                 //Maximalspannung
         const float maxVelocity = 5.14f / voltageMax;   //soll 60rpm, 1rps
 
-        const float axialDistance = 150.0f; //Abstand der beiden Räder in mm
+        const float axialDistance = 180.0f; //Abstand der beiden Räder in mm
         const float wheelDiameter = 43.0f;  //Durchmesser der Antriebsräder in mm
 
         float currentAngle = 90.0f;     //Speichert absoluten Winkel in Grad
@@ -67,13 +67,18 @@ class Drive{
         bool driveToBackwards(int x, int y);        //Fährt rückwärts auf Zielkoordinaten, Rückgabewert true, falls bereits dort
     
     public:
-        Drive();
+        Drive();               
         bool changeAngleAbs(float angle);           //Ändert Winkel des Roboters (Absolut und in RAD), Rückgabe true wenn soll Winkel = ist Winkel
         bool initializeDriveMotors();               //Initialisiert Position des Roboters mit Sensor InFrontOfContainer und ruft calculatepositions auf
         void calculatePositions();                  //Berechnet anhand Konstante amountofPositions die Koordinaten dieser Positionenen
         bool driveToNextPosition();                 //Fährt zur nächsten Position vor dem Startbehälter, Rückgabewert true Flanke, wenn dort angekommen
         bool toTargetContainer();                   //Fährt zum Zielbehälter und dreht sich auf Absolut 90°
         void deleteCurrentPos();                    //Löscht aktuelle und niedrigere Positionen, bei denen bereits Perlen aufgesammelt wurden
+
+        //Für Tests
+        float getIrSensor();
+        float rotateRightWheel();
+        float rotateLeftWheel();
 };
 
 class Mining{
@@ -111,6 +116,9 @@ class Mining{
         bool WheelToUpperPos();             //Hebt Schaufelrad in die obere Endlage   (Volle Geschwindigkeit)
         bool WheelTo10cm();                 //Senkt Schaufelrad auf 10cm    (Volle Geschwindigkeit)
         bool lowerWheel();                  //Senkt Schaufelrad, rückgabewert false wenn ganz unten
+
+        //Für Tests
+        float liftTest();
 };
 
 class Container{

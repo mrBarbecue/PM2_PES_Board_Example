@@ -8,7 +8,7 @@
 #define PinWheelLowerPosition PB_D1
 
 //Ausgang um Schaufelrad anzusteuern
-#define PinMotorWheel PB_D2
+#define PinMotorWheel PB_D3
 
 /*
 MotorLiftWheel.setVelocity(MotorLiftWheel.getMaxVelocity() * 0.5f); halbe Geschwindigkeit
@@ -91,11 +91,15 @@ bool Mining::WheelTo10cm(){                //Senkt oder Hebt Schaufelrad auf 10c
     }
 }
 
-bool equalTo(float value1, float value2){
+bool Mining::equalTo(float value1, float value2){
     if((value1 > (value2-value2/100)) && (value1 < (value2+value2/100))){
         return true;
     }
-    else{
-        return false;
-    }
+    return false;
+}
+
+//Für Tests
+float Mining::liftTest(){
+    MotorLiftWheel.setVelocity(standardVelocity);
+    return MotorLiftWheel.getVoltage();
 }
