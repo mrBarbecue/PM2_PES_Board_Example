@@ -26,21 +26,24 @@ class Drive{
         const float axialDistance = 180.0f; //Abstand der beiden Räder in mm
         const float wheelDiameter = 43.0f;  //Durchmesser der Antriebsräder in mm
 
-        float currentAngle = 90.0f;     //Speichert absoluten Winkel in Grad
+        float currentAngle = 90.0f;          //Speichert absoluten Winkel in Grad
+        float targetRotationsAngle = 0.0f;   //Speichert Zielumdrehungen für changeAngleAbs
+        bool isChangingAngle = false;        //Speichert ob der Roboter gerade den Winkel ändert
+
+        float targetRotationsDriveStraight = 0.0f;  ////Speichert Zielumdrehungen für driveStraight
         
         //Koordinatensystem:
         // +---> X
         // |
         // v
         // Y
-        int positionsX[10] = {0};    //Speichert X Koordinaten der Aufnahme-Positionen des Roboters vor dem StartContainer, wird in calculatePositions berechnet
-        int positionsY[10] = {0};
+        
         const int startAreaX = 180;                             //Wie breit der Bereich vor dem Startcontainer ist, wo sich der Roboter hinstellen darf
         const int startAreaY = 70;
         const int startAreaXOffset = (250 - startAreaX) / 2;    //Abstand der StartAreaX zum Koordinatenursprung (0,0) bei der linken unteren Ecke des Startbehälters (Zentriert)
         const int startAreaYOffset = 40;
         const int startPosX = 70;                              //Wieviele mm vor dem Startbehälter sich die Räder befinden beim Initialisieren (Rädermittelpunkt ist Koordinatenursprung von Roboter)
-        const float triggBeforeContainer = 2.5f / 3.3f;         //2.5V Spannung, wird normiert. Schwellwert ab wann der Roboter vor dem Container steht (bezogen auf Sensor)
+        const float triggBeforeContainer = 0; //2.5f / 3.3f;         //2.5V Spannung, wird normiert. Schwellwert ab wann der Roboter vor dem Container steht (bezogen auf Sensor)
 
         bool isDriving = false; //Flankenerkennung ob Roboter gerade am fahren ist
 
@@ -50,7 +53,10 @@ class Drive{
         int currentPosX; //Speicher aktuelle X position
         int currentPosY; //Speichert aktuelle Y position
 
-        const int amountOfPositions = 7;    //Wieviele verschiedene Aufnahmepositionen vor Startbehälter es gibt, braucht es, um bestmögliche Verteilung vor Startbehälter zu berechnen
+        int positionsX[10] = {0};    //Speichert X Koordinaten der Aufnahme-Positionen des Roboters vor dem StartContainer, wird in calculatePositions berechnet
+        int positionsY[10] = {0};
+
+        const int amountOfPositions = 5;    //Wieviele verschiedene Aufnahmepositionen vor Startbehälter es gibt, braucht es, um bestmögliche Verteilung vor Startbehälter zu berechnen
                                             //Max. 10
         int currentPosition = 0;    //Speichert auf welcher Position beim Perlen aufnehmen sich der Roboter aktuell befindet
                                     //-1: Zielcontainer
@@ -65,6 +71,7 @@ class Drive{
         bool driveTo(int x, int y, bool direction); //Fährt Koordinaten an, Rückgabe true wenn bereits auf diesen Koordinate, direction 1 = geradeaus, 0 = rückwärts anfahren
         bool driveToForwards(int x, int y);         //Fährt geradeaus auf Zielkoordinaten, Rückgabewert true, falls bereits dort
         bool driveToBackwards(int x, int y);        //Fährt rückwärts auf Zielkoordinaten, Rückgabewert true, falls bereits dort
+        bool equalTo(float value1, float value2);   //Vergleicht Soll und Zielwerte mit 0.001 Tolerenz und gibt true zurück falls sie gleich sind
     
     public:
         Drive();               
@@ -94,11 +101,11 @@ class Mining{
         const float rpmV = 450.0f / 12.0f;
         const float voltageMax = 12.0f;
         const float maxVelocity = 1.0f;
-        const float standardVelocity = 8.13f / voltageMax; // soll 350rpm, 5rps
+        const float standardVelocity = 6.775f / voltageMax; // soll 350rpm, 5rps
 
-        const float ThreadPitch = 1.25f;        //Steigung der Gewindestange
-        const float threadedRodlengt = 80.0f;   //Länge der Gewindestange
-        const float wheel10cmRod = 45.0f;       //auf welchecher Position (mm auf der Gewindestange) sich der Motor befindet, um über den Perlen zu sein (Theoretisch 10cm über Boden)
+        const float ThreadPitch = 1.5f;        //Steigung der Gewindestange
+        const float threadedRodlengt = 30.0f;   //Länge der Gewindestange
+        const float wheel10cmRod = 15.0f;       //auf welchecher Position (mm auf der Gewindestange) sich der Motor befindet, um über den Perlen zu sein (Theoretisch 10cm über Boden)
 
         const float wheelUpperPosRotation = threadedRodlengt / ThreadPitch; //Anzahl Umdreungen, die der Motor braucht bis das Schaufelrad in der oberen Endlage ist
         const float wheel10cmPosRotation = wheel10cmRod / ThreadPitch;      //Anzahl Umdreungen, die der Motor braucht bis das Schaufelrad auf 10 cm ist
@@ -107,7 +114,8 @@ class Mining{
         float wheelUpperPosRotationOff = wheelUpperPosRotation + wheelLowerPositionRotation;    //Anzahl Umdreungen bis ganz oben (mit offset)
         float wheel10cmPosRotationOff = wheel10cmPosRotation + wheelLowerPositionRotation;      //Anzahl Umdrehung bis auf höhe Perlen (mit offset)
 
-        bool equalTo(float value1, float value2); //Vergleicht Soll und Zielwerte mit 1% Tolerenz und gibt true zurück falls sie gleich sind
+        bool equalTo(float value1, float value2); //Vergleicht Soll und Zielwerte mit 0.001 Tolerenz und gibt true zurück falls sie gleich sind
+        void printMotorLiftPos();   //gibt die aktuelle höhe (in mm) auf der Sich der Arm befindet auf den Serialmonitor aus
         
     public:
         Mining();
@@ -119,6 +127,7 @@ class Mining{
 
         //Für Tests
         float liftTest();
+        bool getMechanicalSwitch();
 };
 
 class Container{

@@ -37,7 +37,7 @@ void Mining::spinWheel(bool enable){      //Dreht Schaufelrad, int enable -> Dre
 
 bool Mining::initializeMotorLiftWheel(){  //Nullt den Encoder des Motors MotorLiftWheel
     printf("initializeMotorLiftWheel\n");
-    printf("%f\n",MotorLiftWheel.getRotation());
+    printf("LiftWheel rotations: %.0fmm\n",MotorLiftWheel.getRotation());
     if(!WheelLowerPosition.read()){
         MotorLiftWheel.setVelocity(0.0f);
         wheelLowerPositionRotation = MotorLiftWheel.getRotation();
@@ -45,23 +45,21 @@ bool Mining::initializeMotorLiftWheel(){  //Nullt den Encoder des Motors MotorLi
     }
     else if(MotorLiftWheel.getRotation() < (-wheelUpperPosRotation)){ //Watchdog falls Endschalter nicht angiebt
         printf("limitSwitchMissing\n");
+        return true;
     }
     MotorLiftWheel.setVelocity(-maxVelocity); //fährt mit Standartgeschwindigkeit nach unten
     return false;
-
-    
 }
 
 bool Mining::lowerWheel(){       //Senkt Schaufelrad, rückgabewert false wenn ganz unten
     if(WheelLowerPosition.read() == false){
         printf("wheelLowerPosition\n");
-        printf("%f\n",MotorLiftWheel.getRotation() + wheelLowerPositionRotation);
         MotorLiftWheel.setVelocity(0.0f);
         return false;
     }
     else{
         printf("lowerWheel\n");
-        printf("%f\n",MotorLiftWheel.getRotation() + wheelLowerPositionRotation);
+        printMotorLiftPos();
         MotorLiftWheel.setVelocity(-standardVelocity);
         return true;
     }
@@ -69,11 +67,12 @@ bool Mining::lowerWheel(){       //Senkt Schaufelrad, rückgabewert false wenn g
 
 bool Mining::WheelToUpperPos(){           //Hebt Schaufelrad in die obere Endlage   (Volle Geschwindigkeit)
     if(equalTo(MotorLiftWheel.getRotation(), wheelUpperPosRotationOff)){
+        printf("WheelAtUpperPos\n");
         return true;
     }
     else{
         printf("WheelToUpperPos\n");
-        printf("%f\n",MotorLiftWheel.getRotation() + wheelLowerPositionRotation);
+        printMotorLiftPos();
         MotorLiftWheel.setRotation(wheelUpperPosRotationOff);
         return false;
     }
@@ -81,25 +80,34 @@ bool Mining::WheelToUpperPos(){           //Hebt Schaufelrad in die obere Endlag
 
 bool Mining::WheelTo10cm(){                //Senkt oder Hebt Schaufelrad auf 10cm    (Volle Geschwindigkeit)
     if(equalTo(MotorLiftWheel.getRotation(), wheel10cmPosRotationOff)){
+        printf("WheelAt10cm\n");
         return true;
     }
     else{
         printf("WheelTo10cm\n");
-        printf("%f\n",MotorLiftWheel.getRotation() + wheel10cmPosRotation);
+        printMotorLiftPos();
         MotorLiftWheel.setRotation(wheel10cmPosRotationOff);
         return false;
     }
 }
 
 bool Mining::equalTo(float value1, float value2){
-    if((value1 > (value2-value2/100)) && (value1 < (value2+value2/100))){
+    if(value1 > value2 - 0.001 && value1 < value2 + 0.001){
         return true;
     }
     return false;
+}
+
+void Mining::printMotorLiftPos(){
+    printf("LiftWheel position: %.1fmm\n",(MotorLiftWheel.getRotation() - wheelLowerPositionRotation) * ThreadPitch);
 }
 
 //Für Tests
 float Mining::liftTest(){
     MotorLiftWheel.setVelocity(standardVelocity);
     return MotorLiftWheel.getVoltage();
+}
+
+bool Mining::getMechanicalSwitch(){
+    return !WheelLowerPosition.read();
 }

@@ -42,7 +42,7 @@ void Drive::calculatePositions(){
         //Weist Position Startwert zu
         positionsX[0] = startPosX;
         positionsY[0] = startAreaYOffset;
-        printf("Position1: (%d,%d)\n", positionsX[0], positionsY[0]);
+        printf("Position1: (%d, %d)\n", positionsX[0], positionsY[0]);
     }
     else if(amountOfPositions > 1 && amountOfPositions <= 10){
         //Berechnet die Distanz zwischen den einzelnen X-Positionen
@@ -58,7 +58,7 @@ void Drive::calculatePositions(){
                 //Weist ungeraden Positionen den Y-Wert "vorne"
                 positionsY[i] = startAreaYOffset;
             }
-            printf("Position%d: (%d,%d)\n", i, positionsX[i], positionsY[i]);
+            printf("Position%d: (%d, %d)\n", i, positionsX[i], positionsY[i]);
         }
     }
     else{
@@ -85,7 +85,7 @@ bool Drive::initializeDriveMotors(){    //Setzt Koordinaten
 }
 
 void Drive::changeAngleRel(float angle){   //Berechnung in Grad und relativ
-    printf("changeAngleRel: %f°\n", angle);
+    printf("changeAngleRel: %.1f°\n", angle);
     //Berechnet Winkel zwischen [180, -180] um sich nicht unnötig weit zu drehen
     if(angle > 180.0f){
         angle -= 360.0f;
@@ -96,15 +96,10 @@ void Drive::changeAngleRel(float angle){   //Berechnung in Grad und relativ
     //Berechnung anzahl Umdrehung um Roboter um entsprechenden Winkel zu drehen
     float rotationsRobot = (angle / 360.0f * axialDistance) / wheelDiameter;
 
-    MotorDriveLeft.setMaxVelocity(MotorDriveLeft.getMaxPhysicalVelocity() * maxVelocity * 0.5f);
-    MotorDriveRight.setMaxVelocity(MotorDriveRight.getMaxPhysicalVelocity() * maxVelocity* 0.5f);
-    
-    MotorDriveLeft.setRotation(MotorDriveLeft.getRotation() + rotationsRobot);
+    targetRotationsAngle = MotorDriveLeft.getRotation() + rotationsRobot;
+
+    MotorDriveLeft.setRotation(targetRotationsAngle);
     MotorDriveRight.setRotation(MotorDriveRight.getRotation() + rotationsRobot);
-
-    MotorDriveLeft.setMaxVelocity(MotorDriveLeft.getMaxPhysicalVelocity() * maxVelocity);
-    MotorDriveRight.setMaxVelocity(MotorDriveRight.getMaxPhysicalVelocity() * maxVelocity);
-
 
     currentAngle += angle; //setzt neuen Winkel
 
@@ -119,31 +114,51 @@ void Drive::changeAngleRel(float angle){   //Berechnung in Grad und relativ
 
 bool Drive::changeAngleAbs(float angle){   //Berechnung in Rad und absolut
     printf("changeAngleAbs\n");
+    printf("targetAbsoluteAngle: %.1frad\n", angle);
+    printf("currentAngle: %.1f°\n", currentAngle);
+    printf("rotation: %f\n", MotorDriveLeft.getRotation());
+    printf("targetRotationsAngle: %f\n", targetRotationsAngle);
+
     //Berechnung relativer Winkel und Unformung in Grad
     float relativeAngle = angle * 180.0f / PI - currentAngle;
+    
     //Falls bereits auf diesem Winkel
-    if(relativeAngle > -0.5f && relativeAngle < 0.5f && MotorDriveLeft.getVoltage() == 0.0f){
+    if(equalTo(relativeAngle, 0) && !isChangingAngle){
+        return true;
+    }//Winkel wurde gerade geändert
+    else if(equalTo(MotorDriveLeft.getRotation(), targetRotationsAngle) && isChangingAngle && equalTo(relativeAngle, 0)){
+        //Setzt nach Drehung wieder auf Standardgeschwindigkeit
+        MotorDriveLeft.setMaxVelocity(MotorDriveLeft.getMaxPhysicalVelocity() * maxVelocity);
+        MotorDriveRight.setMaxVelocity(MotorDriveRight.getMaxPhysicalVelocity() * maxVelocity);
+        isChangingAngle = false;
         return true;
     }
-    else{
-        changeAngleRel(relativeAngle);
+    //Falls bereits am drehen
+    else if(isChangingAngle){
         return false;
     }
+    //Lässt für drehung Motoren nur auf 40% der Standardgeschwindigkeit fahren
+    MotorDriveLeft.setMaxVelocity(MotorDriveLeft.getMaxPhysicalVelocity() * maxVelocity * 0.4f);
+    MotorDriveRight.setMaxVelocity(MotorDriveRight.getMaxPhysicalVelocity() * maxVelocity* 0.4f);
+    changeAngleRel(relativeAngle);
+    isChangingAngle = true;
+    return false;
 }
 
 bool Drive::driveStraight(int distance){
-    printf("driveStraight: %d\n", distance);
-    //Speichert anzahl umdrehungen für Distanz
-    printf("driveStraightVoltage: %f\n", MotorDriveLeft.getVoltage());
-    //Falls die Motoren gerade nicht angesteuert sind und driveStraight auch nicht gerade angekommen ist
-    if(MotorDriveLeft.getVoltage() == 0.0f && !isDriving){
+    printf("driveStraight distance: %d\n", distance);
+    //Falls driveStraight noch nicht fährt
+    if(!isDriving){
+        //Speichert anzahl umdrehungen für Distanz
         float rotationsDistance = distance / (wheelDiameter * PI);
-        MotorDriveLeft.setRotation(MotorDriveLeft.getRotation() - rotationsDistance);
+        targetRotationsDriveStraight = MotorDriveLeft.getRotation() - rotationsDistance;
+        MotorDriveLeft.setRotation(targetRotationsDriveStraight);
         MotorDriveRight.setRotation(MotorDriveRight.getRotation() + rotationsDistance);
         isDriving = true;
         return false;
+    //Falls driveStraight gerade angekommen ist
     }
-    else if(MotorDriveLeft.getVoltage() == 0.0f && isDriving){
+    else if(equalTo(MotorDriveLeft.getRotation(), targetRotationsDriveStraight) && isDriving){
         isDriving = false;
         return true;
     }
@@ -157,22 +172,23 @@ bool Drive::driveTo(int x, int y, bool direction){
     int inverseDirection = -1;
     //Ändert fahrtrichtung falls direction = 1 (fährt dann vorwärts)
     if(direction){
-        float inverseAngle = 0.0f;
-        int inverseDirection = 0;
+        inverseAngle = 0.0f;
+        inverseDirection = 1;
     }
+    printf("currentPosition: (%d, %d)\n", currentPosX, currentPosY);
     printf("targetPosition: (%d, %d)\n", x, y);
     int changeInPositionY = currentPosY - y;
     int changeInPositionX = x - currentPosX;
 
     //Falls Roboter bereits auf Position steht, wird true zurückgegeben
-    if(changeInPositionX < 1 && changeInPositionX > -1
-    && changeInPositionY < 1 && changeInPositionY > -1){
+    if(changeInPositionX == 0 && changeInPositionY == 0){
 
         return true;
     }
     else{
         //Berechnet Winkel in Rad (Absolut) und dreht sich entsprechend
-        if(changeAngleAbs(atan(changeInPositionY / changeInPositionX) + inverseAngle)){
+        if(changeAngleAbs(atan2(changeInPositionY, changeInPositionX) + inverseAngle)){
+
             //Sobald der Roboter mit richtigem Winkel steht, fährt er los
             if(driveStraight(sqrt(pow(changeInPositionY, 2) + pow(changeInPositionX, 2)) * inverseDirection)){
                 currentPosX = x;
@@ -184,6 +200,7 @@ bool Drive::driveTo(int x, int y, bool direction){
 }
 
 bool Drive::driveToForwards(int x, int y){
+    printf("driveToForwards\n");
     if(driveTo(x, y, true)){
         return true;
     }
@@ -191,6 +208,7 @@ bool Drive::driveToForwards(int x, int y){
 }
 
 bool Drive::driveToBackwards(int x, int y){
+    printf("driveToBackwards\n");
     if(driveTo(x, y, false)){
         return true;
     }
@@ -199,6 +217,7 @@ bool Drive::driveToBackwards(int x, int y){
 }
 
 bool Drive::toTargetContainer(){         //Fährt zum Zielbehälter
+    printf("toTargetContainer\n");
     if(driveToBackwards(posTargetContainerX, posTargetContainerY)){
         //Dreht sich vor Zielbehälter so, dass der Behälter in den Zielbehälter ausgeschütet werden kann
         if(changeAngleAbs(PI)){
@@ -214,6 +233,7 @@ bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem
     //Flankenerkennen wenn neu Position erreicht wurde
     int oldPosition = currentPosition;
     printf("driveToNextPosition\n");
+    printf("currentPos: %d\n", currentPosition);
     //Falls der Roboter beim Zielbehälter steht
     if(currentPosition == -1){
         //Fährt zur ersten Aufnahmeposition vor Startbehälter
@@ -245,13 +265,18 @@ bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem
     if(oldPosition != currentPosition){
         return true;
     }
-    else{
-        return false;
-    }
+    return false;
 }
 
 void Drive::deleteCurrentPos(){ //Löscht aktuelle und niedrigere Positionen, bei denen bereits Perlen aufgesammelt wurden
     deletedPositions = currentPosition;
+}
+
+bool Drive::equalTo(float value1, float value2){
+    if(value1 > value2 - 0.001 && value1 < value2 + 0.001){
+        return true;
+    }
+    return false;
 }
 
 //Für Tests
@@ -261,11 +286,11 @@ float Drive::getIrSensor(){
 }
 
 float Drive::rotateRightWheel(){
-    MotorDriveRight.setRotation(300);
+    MotorDriveRight.setVelocity(-1.0);
     return MotorDriveRight.getVoltage();
 }
 
 float Drive::rotateLeftWheel(){
-    MotorDriveLeft.setRotation(300);
-    return MotorDriveLeft.getEncoderCount();
+    MotorDriveLeft.setVelocity(1.0);
+    return MotorDriveLeft.getVoltage();
 }
