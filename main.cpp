@@ -21,7 +21,7 @@ int main(){
     //Funktion wird aufgerufen, wenn der UserButton gedrückt wird
     UserButton.fall(&executeMainFunction);
 
-    const int mainTaskPeriod = 200;  //Minimalzeit in ms pro maindurchlauf
+    const int mainTaskPeriod = 60;  //Minimalzeit in ms pro maindurchlauf
     Timer MainTaskTimer;            //Erzeugt MainTaskTimer Objekt;
 
     //Start timer
@@ -66,6 +66,7 @@ int main(){
         */
         
         if(executeMainTask){
+            printf("SWITCH: %d\n\n", Mining.getMechanicalSwitch());
             switch(state){
                 case initializeDriveMotors:
                     EnableMotors = true;
@@ -79,11 +80,12 @@ int main(){
                 case nextPos:
                     //Weis an welcher Position der Roboter steht und wie der Roboter zu nächsten Position fahren muss, sobal er angekommen ist,
                     //fängt er wieder an Perlen aufzusammeln
+                    
+                    if(Drive.driveToNextPosition()){
+                        state = nextPos;
+                    }
                     if(Drive.driveToNextPosition() && Mining.getMechanicalSwitch()){
                         state = targetContainer;
-                    }
-                    else if(Drive.driveToNextPosition()){
-                        state = nextPos;
                     }
                     break;
 

@@ -28,11 +28,18 @@ Mining::Mining() :
     // limitiert Maximumgeschwindigkeit
     MotorLiftWheel.setMaxVelocity(MotorLiftWheel.getMaxPhysicalVelocity() * maxVelocity);
 
-    WheelLowerPosition.mode(PullDown);
+    WheelLowerPosition.mode(PullDown); //Pulldown aktivieren
+
+    MotorWheel.period(0.02); //PWM-Ausgang als 50Hz konfiguerieren (20ms persiode)
 }
 
 void Mining::spinWheel(bool enable){      //Dreht Schaufelrad, int enable -> Dreht falls true, Stoppt falls false
-    MotorWheel.write(enable);
+    if(enable){
+        MotorWheel.write(voltageMotorWheel / 12.0f);
+    }
+    else{
+        MotorWheel.write(0.0f);
+    }
 }
 
 bool Mining::initializeMotorLiftWheel(){  //Nullt den Encoder des Motors MotorLiftWheel

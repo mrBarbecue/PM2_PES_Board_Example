@@ -21,7 +21,7 @@ class Drive{
         const float gearRatioMotorDrive = 100.0f;       //Getriebe
         const float rpmV = 140.0f / 12.0f;              //[rpm/V]
         const float voltageMax = 12.0f;                 //Maximalspannung
-        const float maxVelocity = 5.14f / voltageMax;   //soll 60rpm, 1rps
+        const float maxVelocity = 5.0f / voltageMax;   //soll 60rpm, 1rps
 
         const float axialDistance = 180.0f; //Abstand der beiden Räder in mm
         const float wheelDiameter = 43.0f;  //Durchmesser der Antriebsräder in mm
@@ -95,13 +95,15 @@ class Mining{
         //Mechanischer Endschalter um höhenantrieb zu nullen
         DigitalIn WheelLowerPosition;
         //Ausgang um Schaufelrad anzusteuern
-        DigitalOut MotorWheel;
+        PwmOut MotorWheel;
 
         const float gearRatioMotorLiftWheel = 31.25f;
         const float rpmV = 450.0f / 12.0f;
         const float voltageMax = 12.0f;
         const float maxVelocity = 1.0f;
         const float standardVelocity = 6.775f / voltageMax; // soll 350rpm, 5rps
+
+        const float voltageMotorWheel = 8.0f; //Spannung des Schaufelradmotors
 
         const float ThreadPitch = 1.5f;        //Steigung der Gewindestange
         const float threadedRodlengt = 30.0f;   //Länge der Gewindestange

@@ -14,6 +14,7 @@ Container::Container() :
 
 bool Container::containerFull(){
     if(ContainerFull.read() <= triggContainerFull){
+        printf("containerFull\n");
         return true;
     }
     return false;
@@ -21,9 +22,11 @@ bool Container::containerFull(){
 
 void Container::tiltContainer(bool enable){   //Kippt Behälter, int enable -> Kippt falls true
     if(enable){
+        printf("TiltContainer: true\n");
         ServoTilt.setNormalisedPulseWidth(1.0f);
     }
     else{
+        printf("TiltContainer: false\n");
         ServoTilt.setNormalisedPulseWidth(0.0f);
     }
 }
