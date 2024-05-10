@@ -65,7 +65,8 @@ class Drive{
                                     //-1: alle Positionen sind verfügbar
                                     //0: Position0 ist nicht mehr verfügbar
                                     //1: ...
-
+                                    
+        bool changeAngleAbs(float angle);           //Ändert Winkel des Roboters (Absolut und in RAD), Rückgabe true wenn soll Winkel = ist Winkel
         void changeAngleRel(float angle);           //Ändert Winkel des Roboters (Relativ und in GRAD)
         bool driveStraight(int distance);           //Wie weit der Roboter geradeaus fahren soll (Relativ)
         bool driveTo(int x, int y, bool direction); //Fährt Koordinaten an, Rückgabe true wenn bereits auf diesen Koordinate, direction 1 = geradeaus, 0 = rückwärts anfahren
@@ -75,7 +76,6 @@ class Drive{
     
     public:
         Drive();               
-        bool changeAngleAbs(float angle);           //Ändert Winkel des Roboters (Absolut und in RAD), Rückgabe true wenn soll Winkel = ist Winkel
         bool initializeDriveMotors();               //Initialisiert Position des Roboters mit Sensor InFrontOfContainer und ruft calculatepositions auf
         void calculatePositions();                  //Berechnet anhand Konstante amountofPositions die Koordinaten dieser Positionenen
         bool driveToNextPosition();                 //Fährt zur nächsten Position vor dem Startbehälter, Rückgabewert true Flanke, wenn dort angekommen
@@ -103,7 +103,7 @@ class Mining{
         const float maxVelocity = 1.0f;
         const float standardVelocity = 6.775f / voltageMax; // soll 350rpm, 5rps
 
-        const float voltageMotorWheel = 8.0f; //Spannung des Schaufelradmotors
+        const float voltageMotorWheel = 11.0f; //Spannung des Schaufelradmotors
 
         const float ThreadPitch = 1.5f;        //Steigung der Gewindestange
         const float threadedRodlengt = 30.0f;   //Länge der Gewindestange
@@ -115,17 +115,17 @@ class Mining{
         float wheelLowerPositionRotation = 0; //Hier wird nach dem Nullen der Offset zum Nullpunkt gespeichert
         float wheelUpperPosRotationOff = wheelUpperPosRotation + wheelLowerPositionRotation;    //Anzahl Umdreungen bis ganz oben (mit offset)
         float wheel10cmPosRotationOff = wheel10cmPosRotation + wheelLowerPositionRotation;      //Anzahl Umdrehung bis auf höhe Perlen (mit offset)
-
-        bool equalTo(float value1, float value2); //Vergleicht Soll und Zielwerte mit 0.001 Tolerenz und gibt true zurück falls sie gleich sind
-        void printMotorLiftPos();   //gibt die aktuelle höhe (in mm) auf der Sich der Arm befindet auf den Serialmonitor aus
+    
+        bool equalTo(float value1, float value2);   //Vergleicht Soll und Zielwerte mit 0.005 Tolerenz und gibt true zurück falls sie gleich sind
+        void printMotorLiftPos();                   //gibt die aktuelle höhe (in mm) auf der Sich der Arm befindet auf den Serialmonitor aus
         
     public:
         Mining();
-        bool initializeMotorLiftWheel();    //Nullt den Encouder des Motors MotorLiftWheel, true wenn auf Endschalter
-        void spinWheel(bool enable);        //Dreht Schaufelrad, bool enable -> Dreht falls true, Stoppt falls false
-        bool WheelToUpperPos();             //Hebt Schaufelrad in die obere Endlage   (Volle Geschwindigkeit)
-        bool WheelTo10cm();                 //Senkt Schaufelrad auf 10cm    (Volle Geschwindigkeit)
-        bool lowerWheel();                  //Senkt Schaufelrad, rückgabewert false wenn ganz unten
+        bool initializeMotorLiftWheel();            //Nullt den Encouder des Motors MotorLiftWheel, true wenn auf Endschalter
+        void spinWheel(bool enable);                //Dreht Schaufelrad, bool enable -> Dreht falls true, Stoppt falls false
+        bool WheelToUpperPos();                     //Hebt Schaufelrad in die obere Endlage   (Volle Geschwindigkeit)
+        bool WheelTo10cm();                         //Senkt Schaufelrad auf 10cm    (Volle Geschwindigkeit)
+        bool lowerWheel();                          //Senkt Schaufelrad, rückgabewert false wenn ganz unten
 
         //Für Tests
         float liftTest();

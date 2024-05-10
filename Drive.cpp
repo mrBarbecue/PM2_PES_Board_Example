@@ -282,6 +282,7 @@ bool Drive::equalTo(float value1, float value2){
 //Für Tests
 
 float Drive::getIrSensor(){
+    printf("InFrontOfContainer: %f\n", InFrontOfContainer.read());
     return InFrontOfContainer.read();
 }
 

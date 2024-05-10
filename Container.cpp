@@ -1,7 +1,7 @@
 #include "headers.h"
 
 //Pin an den der Servo angeschlossen ist
-#define PinServoTilt PB_D2
+#define PinServoTilt PB_D3
 //Ultraschallsensor, wann Behälter Vollbeladen ist
 #define PinContainerFull PB_D0
 

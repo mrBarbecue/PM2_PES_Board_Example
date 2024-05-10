@@ -55,59 +55,11 @@ int main(){
 
     while(true){
         MainTaskTimer.reset();
-        
-        /*
-        counterDriveToTargetContainer++; //Zählt jeden while durchlauf
-        //Wenn Zeit in Minuten von driveToTargetContainer vorbei sind, fährt der Roboter zum Zielbehälter um restliche perlen auszuladen
-        if(counterDriveToTargetContainer == loopsDriveToTargetContainer && state != wheelToUpperPos && state != targetContainer){
-            state = wheelToUpperPos;
-            printf("%f.1min have passed", driveToTargetContainer);
-        }
-        */
-        
         if(executeMainTask){
-            printf("SWITCH: %d\n\n", Mining.getMechanicalSwitch());
-            switch(state){
-                case initializeDriveMotors:
-                    EnableMotors = true;
-                        //Berechnet Koordinaten der Positionen wo Perlen aufgesammelt werden
-                        Drive.initializeDriveMotors();
-                        Drive.calculatePositions();
-                        state = nextPos;
-
-                    break;
-
-                case nextPos:
-                    //Weis an welcher Position der Roboter steht und wie der Roboter zu nächsten Position fahren muss, sobal er angekommen ist,
-                    //fängt er wieder an Perlen aufzusammeln
-                    
-                    if(Drive.driveToNextPosition()){
-                        state = nextPos;
-                    }
-                    if(Drive.driveToNextPosition() && Mining.getMechanicalSwitch()){
-                        state = targetContainer;
-                    }
-                    break;
-
-                case targetContainer:
-                    Drive.deleteCurrentPos(); //Löscht Aufsammel-Positonen die bereits angefahren wurden
-                    if(Drive.toTargetContainer()){
-                        //Kippt den Behälter
-                        Container.tiltContainer(true);
-                        //Zählt loops
-                        counterServoTiltTime++;
-                        //Wenn zeit vergange ist, wird der Behälter wieder eingefahren
-                        if(counterServoTiltTime >= loopsServoTiltTime){
-                            //Fährt den Behälter wieder ein
-                            Container.tiltContainer(false);
-                            state = nextPos;
-                            counterServoTiltTime = 0; //Zähler zurücksetzten
-                        }
-                    }
-                    break;
-            }
+            Drive.getIrSensor();
         }
         else{
+            
             //wird nach drücken des UserButton einmal ausgeführt
             if(resetAll){
                 resetAll = false;

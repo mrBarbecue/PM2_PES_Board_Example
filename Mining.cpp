@@ -8,7 +8,7 @@
 #define PinWheelLowerPosition PB_D1
 
 //Ausgang um Schaufelrad anzusteuern
-#define PinMotorWheel PB_D3
+#define PinMotorWheel PB_D2
 
 /*
 MotorLiftWheel.setVelocity(MotorLiftWheel.getMaxVelocity() * 0.5f); halbe Geschwindigkeit
@@ -30,7 +30,7 @@ Mining::Mining() :
 
     WheelLowerPosition.mode(PullDown); //Pulldown aktivieren
 
-    MotorWheel.period(0.02); //PWM-Ausgang als 50Hz konfiguerieren (20ms persiode)
+    MotorWheel.period(0.02); //PWM-Ausgang als 50Hz konfiguerieren (20ms periode)
 }
 
 void Mining::spinWheel(bool enable){      //Dreht Schaufelrad, int enable -> Dreht falls true, Stoppt falls false
@@ -40,6 +40,7 @@ void Mining::spinWheel(bool enable){      //Dreht Schaufelrad, int enable -> Dre
     else{
         MotorWheel.write(0.0f);
     }
+    printf("dutyCycleWheel: %.1f%%\n", MotorWheel.read() * 100.0f);
 }
 
 bool Mining::initializeMotorLiftWheel(){  //Nullt den Encoder des Motors MotorLiftWheel
@@ -99,7 +100,7 @@ bool Mining::WheelTo10cm(){                //Senkt oder Hebt Schaufelrad auf 10c
 }
 
 bool Mining::equalTo(float value1, float value2){
-    if(value1 > value2 - 0.001 && value1 < value2 + 0.001){
+    if(value1 > value2 - 0.005 && value1 < value2 + 0.005){
         return true;
     }
     return false;
