@@ -13,17 +13,6 @@
 
 #define PI 3.1415926f
 
-/*
-PWM input 0.0f: -12V
-PWM input 0.5f: 0V
-PWM input 1.0f: 12V
-
-MotorLiftWheel.setVelocity(MotorLiftWheel.getMaxVelocity() * 0.5f); halbe Geschwindigkeit
-MotorLiftWheel.setVelocity(1.0f); volle Geschwindigkeit
-MotorLiftWheel.setVelocity(standardVelocity); standart Geschwindigkeit
-MotorLiftWheel.setRotation(3.0f);
-*/
-
 Drive::Drive() :
     MotorDriveRight(PinMotorDriveRight, PinEncoderMotorRightA, PinEncoderMotorRightB, 100.0f, 140.0f/12.0f, 12.0f),
     MotorDriveLeft(PinMotorDriveLeft, PinEncoderMotorLeftA, PinEncoderMotorLeftB, 100.0f, 140.0f/12.0f, 12.0f),
@@ -67,7 +56,9 @@ void Drive::calculatePositions(){
 } 
 
 bool Drive::initializeDriveMotors(){    //Setzt Koordinaten
+    /*
     printf("initializeDriveMotors\n");
+    printf("IR voltage: %.2fV", InFrontOfContainer.read());
 
     MotorDriveLeft.setVelocity(-0.5f);
     MotorDriveRight.setVelocity(0.5f);
@@ -75,13 +66,13 @@ bool Drive::initializeDriveMotors(){    //Setzt Koordinaten
     if(InFrontOfContainer.read() >= triggBeforeContainer){ //Fährt solange geradeaus, bis vor Container
         MotorDriveLeft.setVelocity(0.0f);
         MotorDriveRight.setVelocity(0.0f);
-
+    */
         currentPosX = startPosX;
         currentPosY = startAreaYOffset;
 
         return true;
-    }
-    return false;
+    //}
+    //return false;
 }
 
 void Drive::changeAngleRel(float angle){   //Berechnung in Grad und relativ
@@ -287,11 +278,13 @@ float Drive::getIrSensor(){
 }
 
 float Drive::rotateRightWheel(){
-    MotorDriveRight.setVelocity(-1.0);
+    MotorDriveRight.setVelocity(-1.0f);
+    printf("MotorDriveRight voltage: %.1f\n", MotorDriveRight.getVoltage());
     return MotorDriveRight.getVoltage();
 }
 
 float Drive::rotateLeftWheel(){
-    MotorDriveLeft.setVelocity(1.0);
+    MotorDriveLeft.setVelocity(1.0f);
+    printf("MotorDriveRLeft voltage: %.1f\n", MotorDriveLeft.getVoltage());
     return MotorDriveLeft.getVoltage();
 }

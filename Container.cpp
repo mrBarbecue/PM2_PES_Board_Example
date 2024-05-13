@@ -13,7 +13,7 @@ Container::Container() :
 }
 
 bool Container::containerFull(){
-    if(ContainerFull.read() <= triggContainerFull){
+    if(triggContainerFull >= ContainerFull.read() && ContainerFull.read() != -1.0f){
         printf("containerFull\n");
         return true;
     }
