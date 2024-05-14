@@ -13,7 +13,8 @@ Container::Container() :
 }
 
 bool Container::containerFull(){
-    if(triggContainerFull >= ContainerFull.read() && ContainerFull.read() != -1.0f){
+    printf("UltraSonic: %.2f\n", ContainerFull.read());
+    if(triggContainerFull >= ContainerFull.read() && ContainerFull.read() > 0){
         printf("containerFull\n");
         return true;
     }

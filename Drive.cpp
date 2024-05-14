@@ -264,7 +264,7 @@ void Drive::deleteCurrentPos(){ //Löscht aktuelle und niedrigere Positionen, be
 }
 
 bool Drive::equalTo(float value1, float value2){
-    if(value1 > value2 - 0.001 && value1 < value2 + 0.001){
+    if(value1 > value2 - 0.01 && value1 < value2 + 0.01){
         return true;
     }
     return false;

@@ -49,21 +49,21 @@ bool Mining::initializeMotorLiftWheel(){  //Nullt den Encoder des Motors MotorLi
     return false;
 }
 
-bool Mining::lowerWheel(){       //Senkt Schaufelrad, rückgabewert false wenn ganz unten
+bool Mining::lowerWheel(){       //Senkt Schaufelrad, rückgabewert true wenn ganz unten
     if(!WheelLowerPosition.read()){
         printf("wheelLowerPosition\n");
         MotorLiftWheel.setVelocity(0.0f);
-        return false;
+        return true;
     }
     else{
         printf("lowerWheel\n");
         printMotorLiftPos();
         MotorLiftWheel.setVelocity(-standardVelocity);
-        return true;
+        return false;
     }
 }
 
-bool Mining::WheelToUpperPos(){           //Hebt Schaufelrad in die obere Endlage   (Volle Geschwindigkeit)
+bool Mining::wheelToUpperPos(){           //Hebt Schaufelrad in die obere Endlage   (Volle Geschwindigkeit)
     printf("wheelUpperPosRotation: %.4f\n", wheelUpperPosRotationOff);
     printf("MotorLiftWheel rotations: %.4f\n", MotorLiftWheel.getRotation());
     if(equalTo(MotorLiftWheel.getRotation(), wheelUpperPosRotationOff)){
@@ -78,7 +78,7 @@ bool Mining::WheelToUpperPos(){           //Hebt Schaufelrad in die obere Endlag
     }
 }
 
-bool Mining::WheelTo10cm(){                //Senkt oder Hebt Schaufelrad auf 10cm    (Volle Geschwindigkeit)
+bool Mining::wheelTo10cm(){                //Senkt oder Hebt Schaufelrad auf 10cm    (Volle Geschwindigkeit)
     printf("wheel10cmPosRotation: %.4f\n", wheel10cmPosRotationOff);
     if(equalTo(MotorLiftWheel.getRotation(), wheel10cmPosRotationOff)){
         printf("WheelAt10cm\n");
@@ -93,7 +93,7 @@ bool Mining::WheelTo10cm(){                //Senkt oder Hebt Schaufelrad auf 10c
 }
 
 bool Mining::equalTo(float value1, float value2){
-    if(value1 > value2 - 0.01 && value1 < value2 + 0.01){
+    if(value1 > value2 - 0.05 && value1 < value2 + 0.05){
         return true;
     }
     return false;
@@ -105,7 +105,7 @@ void Mining::printMotorLiftPos(){
 
 //Für Tests
 float Mining::liftWheel(){
-    MotorLiftWheel.setVelocity(7.5f);
+    MotorLiftWheel.setVelocity(1.0f);
     printMotorLiftPos();
     return MotorLiftWheel.getVoltage();
 }

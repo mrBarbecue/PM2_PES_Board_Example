@@ -71,7 +71,7 @@ class Drive{
         bool driveTo(int x, int y, bool direction); //Fährt Koordinaten an, Rückgabe true wenn bereits auf diesen Koordinate, direction 1 = geradeaus, 0 = rückwärts anfahren
         bool driveToForwards(int x, int y);         //Fährt geradeaus auf Zielkoordinaten, Rückgabewert true, falls bereits dort
         bool driveToBackwards(int x, int y);        //Fährt rückwärts auf Zielkoordinaten, Rückgabewert true, falls bereits dort
-        bool equalTo(float value1, float value2);   //Vergleicht Soll und Zielwerte mit 0.001 Tolerenz und gibt true zurück falls sie gleich sind
+        bool equalTo(float value1, float value2);   //Vergleicht Soll und Zielwerte mit 0.01 Tolerenz und gibt true zurück falls sie gleich sind
     
     public:
         Drive();               
@@ -96,9 +96,10 @@ class Mining{
         //Ausgang um Schaufelrad anzusteuern
         DigitalOut MotorWheel;
 
-        const float maxVelocityRps = 4.0f; //7.5f
+        const float maxVelocityRps = 6.0f; //7.5f
+        const float standardVelocity = 4.0f; //5.0f
+
         const float maxVelocity = maxVelocityRps / 12.0f;
-        const float standardVelocity = 2.5f; //5.0f
 
         const float ThreadPitch = 1.5f;         //Steigung der Gewindestange
         const float threadedRodlengt = 95.0f;   //Länge der Gewindestange
@@ -111,16 +112,16 @@ class Mining{
         float wheelUpperPosRotationOff = 0;     //Anzahl Umdreungen bis ganz oben (mit offset)
         float wheel10cmPosRotationOff = 0;      //Anzahl Umdrehung bis auf höhe Perlen (mit offset)
     
-        bool equalTo(float value1, float value2);   //Vergleicht Soll und Zielwerte mit 0.1 Tolerenz und gibt true zurück falls sie gleich sind
+        bool equalTo(float value1, float value2);   //Vergleicht Soll und Zielwerte mit 0.05 Tolerenz und gibt true zurück falls sie gleich sind
         void printMotorLiftPos();                   //gibt die aktuelle höhe (in mm) auf der Sich der Arm befindet auf den Serialmonitor aus
         
     public:
         Mining();
         bool initializeMotorLiftWheel();            //Nullt den Encouder des Motors MotorLiftWheel, true wenn auf Endschalter
         void spinWheel(bool enable);                //Dreht Schaufelrad, bool enable -> Dreht falls true, Stoppt falls false
-        bool WheelToUpperPos();                     //Hebt Schaufelrad in die obere Endlage   (Volle Geschwindigkeit)
-        bool WheelTo10cm();                         //Senkt Schaufelrad auf 10cm    (Volle Geschwindigkeit)
-        bool lowerWheel();                          //Senkt Schaufelrad, rückgabewert false wenn ganz unten
+        bool wheelToUpperPos();                     //Hebt Schaufelrad in die obere Endlage   (Volle Geschwindigkeit)
+        bool wheelTo10cm();                         //Senkt Schaufelrad auf 10cm    (Volle Geschwindigkeit)
+        bool lowerWheel();                          //Senkt Schaufelrad, rückgabewert true wenn ganz unten
 
         //Für Tests
         float liftWheel();

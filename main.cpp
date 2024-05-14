@@ -24,12 +24,12 @@ int main(){
     const int mainTaskPeriod = 60;  //Minimalzeit in ms pro maindurchlauf
     Timer MainTaskTimer;            //Erzeugt MainTaskTimer Objekt;
 
-    //Start timer
+    //Start timer-
     MainTaskTimer.start();
 
     //Verschiedene Zustände in switch-case
     enum states{
-    initializeLiftWheel, initializeDriveMotors, mining, wheelTo10cm, wheelToUpperPos, nextPos, targetContainer};
+    initializeLiftWheel, initializeDriveMotors, mining, wheelTo10cm, wheelToUpperPos, nextPos, targetContainer, test};
     //Speichert die Zustände in switch-case
     int state = 0;
 
@@ -57,22 +57,25 @@ int main(){
         MainTaskTimer.reset();
         counterDriveToTargetContainer++; //Zählt jeden while durchlauf
         //Wenn Zeit in Minuten von driveToTargetContainer vorbei sind, fährt der Roboter zum Zielbehälter um restliche perlen auszuladen
-        if(counterDriveToTargetContainer == loopsDriveToTargetContainer && state != wheelToUpperPos && state != targetContainer){
+        if(counterDriveToTargetContainer == loopsDriveToTargetContainer && state != targetContainer){
             state = wheelToUpperPos;
-            printf("%f.1min have passed", driveToTargetContainer);
+            printf("%.1fmin have passed", driveToTargetContainer);
         }
         if(executeMainTask){
-
+            EnableMotors = true;
             switch(state){
+                case test:
+                    Mining.liftWheel();
+                    break;
+                    
                 case initializeLiftWheel:
                     //Nullt den Antrieb, der das Schaufelrad hebt
-                    EnableMotors = true;
                     if(!liftWheelInitialized){
                         liftWheelInitialized = Mining.initializeMotorLiftWheel();
                     }
                     else{
                         //Sobal Schaufelrad in der oberen Endlange ist, wird dieser case verlassen
-                        if(Mining.WheelToUpperPos()){
+                        if(Mining.wheelToUpperPos()){
                             state = initializeDriveMotors;
                         }
                     }
@@ -82,7 +85,7 @@ int main(){
                     //Fährt auf den Startcontainer zu un stoppt bei der ersten Position um Perlen aufsammeln zu können
                     if(Drive.initializeDriveMotors()){
                         if(!driveMotorsInitialized){
-                            driveMotorsInitialized = Mining.WheelTo10cm();
+                            driveMotorsInitialized = Mining.wheelTo10cm();
                         }
                         else{
                             //Berechnet Koordinaten der Positionen wo Perlen aufgesammelt werden
@@ -107,13 +110,14 @@ int main(){
 
                 case wheelTo10cm:    
                     //Sobal Schaufelrad überhalb der Perlen ist, wird neue Position angefahren
-                    if(Mining.WheelTo10cm()){
+                    if(Mining.wheelTo10cm()){
+                        Mining.spinWheel(false);
                         state = nextPos;
                     }
                     break;
 
                 case wheelToUpperPos:
-                    if(Mining.WheelToUpperPos()){
+                    if(Mining.wheelToUpperPos()){
                         //Wenn Container voll ist, Schaufelrad in die obere Endlage, Rad verzögert ausschalten (um restliche Perlen noch in eigenen Behälter zu befördern) 
                         Mining.spinWheel(false);
                         state = targetContainer;
@@ -149,6 +153,7 @@ int main(){
         else{
             //wird nach drücken des UserButton einmal ausgeführt
             if(resetAll){
+                /*
                 resetAll = false;
                 
                 EnableMotors = false;
@@ -158,6 +163,7 @@ int main(){
                 counterDriveToTargetContainer = 0;
 
                 state = initializeLiftWheel;
+                */
             }
         }
         
