@@ -220,7 +220,7 @@ bool Drive::toTargetContainer(){         //Fährt zum Zielbehälter
     return false;
 }
 
-bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem Startbehälter
+bool Drive::driveToNextPosition(bool *lastPosReached){       //Fährt zur nächsten Position vor dem Startbehälter
     //Flankenerkennen wenn neu Position erreicht wurde
     int oldPosition = currentPosition;
     printf("driveToNextPosition\n");
@@ -241,6 +241,7 @@ bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem
         if(currentPosition % 2 == 0){
             if(driveToForwards(positionsX[currentPosition+1], positionsY[currentPosition+1])){
                 currentPosition += 1;
+                driveToNextPosition(lastPosReached);
             }
         }
         //Falls auf Y-Postition "vorne"
@@ -252,8 +253,10 @@ bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem
     }
     else{
         printf("FEHLER: letzte Position erreicht\n");
+        *lastPosReached = true;
+
     }
-    if(oldPosition != currentPosition){
+    if(oldPosition != currentPosition && currentPosition %2 != 0){
         return true;
     }
     return false;
@@ -261,6 +264,10 @@ bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem
 
 void Drive::deleteCurrentPos(){ //Löscht aktuelle und niedrigere Positionen, bei denen bereits Perlen aufgesammelt wurden
     deletedPositions = currentPosition;
+    //Falls alle Positionen bereits angefahren wurden, wird als nächstes wieder Pos0 angefahren
+    if(deletedPositions == amountOfPositions - 1){
+        currentPosition = 0;
+    }
 }
 
 bool Drive::equalTo(float value1, float value2){

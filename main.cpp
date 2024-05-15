@@ -43,6 +43,8 @@ int main(){
                                                                                                 //vergangen ist
     int counterDriveToTargetContainer = 0;   //Zählt loops für driveToTargetContainer
 
+    bool lastPosReached = false; //Speichert ob es noch Aufsammelpositionen übrig hat
+
     //Erstellt Objekte, da es von allen Klassen je nur ein Objekt braucht, heissen sie gleich wie ihre Klassen
     Drive Drive;
     Mining Mining;
@@ -127,8 +129,12 @@ int main(){
                 case nextPos:
                     //Weis an welcher Position der Roboter steht und wie der Roboter zu nächsten Position fahren muss, sobal er angekommen ist,
                     //fängt er wieder an Perlen aufzusammeln
-                    if(Drive.driveToNextPosition()){
+                    if(Drive.driveToNextPosition(&lastPosReached) && lastPosReached == false){
                         state = mining;
+                    }
+                    else if(lastPosReached){
+                        state = targetContainer;
+                        lastPosReached = false;
                     }
                     break;
 

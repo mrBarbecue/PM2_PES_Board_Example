@@ -36,7 +36,7 @@ class Drive{
         // Y
         
         const int startAreaX = 250 - axialDistance;             //Wie breit der Bereich vor dem Startcontainer ist, wo sich der Roboter hinstellen darf
-        const int startAreaY = 25;
+        const int startAreaY = 140;                             
         const int startAreaXOffset = (250 - startAreaX) / 2;    //Abstand der StartAreaX zum Koordinatenursprung (0,0) bei der linken unteren Ecke des Startbehälters (Zentriert)
         const int startAreaYOffset = 30;                        
         const int startPosY = 172.0f;                           //Wieviele mm vor dem Startbehälter sich die Räder befinden beim Initialisieren (Rädermittelpunkt ist Koordinatenursprung von Roboter) befinden
@@ -75,11 +75,11 @@ class Drive{
     
     public:
         Drive();               
-        bool initializeDriveMotors();               //Initialisiert Position des Roboters mit Sensor InFrontOfContainer und ruft calculatepositions auf
-        void calculatePositions();                  //Berechnet anhand Konstante amountofPositions die Koordinaten dieser Positionenen
-        bool driveToNextPosition();                 //Fährt zur nächsten Position vor dem Startbehälter, Rückgabewert true Flanke, wenn dort angekommen
-        bool toTargetContainer();                   //Fährt zum Zielbehälter und dreht sich auf Absolut 90°
-        void deleteCurrentPos();                    //Löscht aktuelle und niedrigere Positionen, bei denen bereits Perlen aufgesammelt wurden
+        bool initializeDriveMotors();                    //Initialisiert Position des Roboters mit Sensor InFrontOfContainer und ruft calculatepositions auf
+        void calculatePositions();                       //Berechnet anhand Konstante amountofPositions die Koordinaten dieser Positionenen
+        bool driveToNextPosition(bool *lastPosReached);  //Fährt zur nächsten Position vor dem Startbehälter, Rückgabewert true Flanke, wenn dort angekommen
+        bool toTargetContainer();                        //Fährt zum Zielbehälter und dreht sich auf Absolut 90°
+        void deleteCurrentPos();                         //Löscht aktuelle und niedrigere Positionen, bei denen bereits Perlen aufgesammelt wurden
 
         //Für Tests
         float getIrSensor();
