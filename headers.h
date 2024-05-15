@@ -55,7 +55,7 @@ class Drive{
         int positionsX[10] = {0};    //Speichert X Koordinaten der Aufnahme-Positionen des Roboters vor dem StartContainer, wird in calculatePositions berechnet
         int positionsY[10] = {0};
 
-        const int amountOfPositions = 5;    //Wieviele verschiedene Aufnahmepositionen vor Startbehälter es gibt, braucht es, um bestmögliche Verteilung vor Startbehälter zu berechnen
+        const int amountOfPositions = 6;    //Wieviele verschiedene Aufnahmepositionen vor Startbehälter es gibt, braucht es, um bestmögliche Verteilung vor Startbehälter zu berechnen
                                             //Max. 10
         int currentPosition = 0;    //Speichert auf welcher Position beim Perlen aufnehmen sich der Roboter aktuell befindet
                                     //-1: Zielcontainer
@@ -77,7 +77,10 @@ class Drive{
         Drive();               
         bool initializeDriveMotors();                    //Initialisiert Position des Roboters mit Sensor InFrontOfContainer und ruft calculatepositions auf
         void calculatePositions();                       //Berechnet anhand Konstante amountofPositions die Koordinaten dieser Positionenen
-        bool driveToNextPosition(bool *lastPosReached);  //Fährt zur nächsten Position vor dem Startbehälter, Rückgabewert true Flanke, wenn dort angekommen
+        bool driveInFrontOfPos();                        //Fährt den Roboter vor eine Aufsammelposition
+        bool driveRelative(int x, int y, bool direction);//Ändert aktuelle Position umd die der Paramter. Fährt vorwärts falls direction == true
+        bool driveToNextPosition();  //Fährt zur nächsten Position vor dem Startbehälter, Rückgabewert true Flanke, wenn dort angekommen.
+        bool lastPositionReached() ;                     //Gibt true zurück, falls es keine weiteren Aufsammelpositionen mehr gibt
         bool toTargetContainer();                        //Fährt zum Zielbehälter und dreht sich auf Absolut 90°
         void deleteCurrentPos();                         //Löscht aktuelle und niedrigere Positionen, bei denen bereits Perlen aufgesammelt wurden
 

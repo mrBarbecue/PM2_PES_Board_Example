@@ -40,12 +40,12 @@ void Drive::calculatePositions(){
             //Weist X-Positionen Koordinate mit gleichem Abstand zu
             positionsX[i] = startAreaXOffset + distanceX * i;
             if(i % 2 == 0){
-                //Weist geraden Positionen den Y-Wert "hinten zu"
-                positionsY[i] = startAreaY + startAreaYOffset;
+                //Weist geraden Positionen den Y-Wert "vorne"
+                positionsY[i] = startAreaYOffset;
             }
             else{
-                //Weist ungeraden Positionen den Y-Wert "vorne"
-                positionsY[i] = startAreaYOffset;
+                //Weist ungeraden Positionen den Y-Wert "hinten"
+                positionsY[i] = startAreaY + startAreaYOffset;
             }
             printf("Position%d: (%d, %d)\n", i, positionsX[i], positionsY[i]);
         }
@@ -68,7 +68,7 @@ bool Drive::initializeDriveMotors(){    //Setzt Koordinaten
         MotorDriveRight.setVelocity(0.0f);
     */
         currentPosX = startPosX;
-        currentPosY = startAreaYOffset;
+        currentPosY = startPosY;
 
         return true;
     //}
@@ -156,7 +156,7 @@ bool Drive::driveStraight(int distance){
     return false;
 }
 
-bool Drive::driveTo(int x, int y, bool direction){
+bool Drive::driveTo(int x, int y, bool direction){ //direction == true -> fährt vorwärts
     //Offset für Rückwärtsfahrt um 180°
     float inverseAngle = PI;
     //Lässt Räder in andere Richtung drehen für Rückwärtsfahrt
@@ -206,6 +206,27 @@ bool Drive::driveToBackwards(int x, int y){
     return false;
 
 }
+bool Drive::driveInFrontOfPos(){
+    if(driveToForwards(positionsX[deletedPositions + 1], posTargetContainerY - 50)){
+        return true;
+    }
+    return false;
+}
+
+
+bool Drive::driveRelative(int x, int y, bool direction){ //direction = true -> fährt vorwärts
+    if(direction){
+        if(driveToForwards(currentPosX + x, currentPosY + y)){
+            return true;
+        }
+    }
+    else{
+        if(driveToBackwards(currentPosX + x, currentPosY + y)){
+            return true;
+        }
+    }
+    return false;
+}
 
 bool Drive::toTargetContainer(){         //Fährt zum Zielbehälter
     printf("toTargetContainer\n");
@@ -220,7 +241,7 @@ bool Drive::toTargetContainer(){         //Fährt zum Zielbehälter
     return false;
 }
 
-bool Drive::driveToNextPosition(bool *lastPosReached){       //Fährt zur nächsten Position vor dem Startbehälter
+bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem Startbehälter
     //Flankenerkennen wenn neu Position erreicht wurde
     int oldPosition = currentPosition;
     printf("driveToNextPosition\n");
@@ -236,25 +257,22 @@ bool Drive::driveToNextPosition(bool *lastPosReached){       //Fährt zur nächs
         }
     }
     //Falls der Roboter bereits auf einer Position vor dem Startbehälter steht und er weiter aufsammeln muss
-    else if(currentPosition >= 0 && currentPosition < amountOfPositions-1){
-        //Falls auf Y-Postition "hinten"
+    else if(currentPosition < amountOfPositions-1){
+        //Falls auf Y-Postition "vorne"
         if(currentPosition % 2 == 0){
-            if(driveToForwards(positionsX[currentPosition+1], positionsY[currentPosition+1])){
+            if(driveToBackwards(positionsX[currentPosition+1], positionsY[currentPosition+1])){
                 currentPosition += 1;
-                driveToNextPosition(lastPosReached);
             }
         }
-        //Falls auf Y-Postition "vorne"
+        //Falls auf Y-Postition "hinten"
         else{
-            if(driveToBackwards(positionsX[currentPosition+1], positionsY[currentPosition+1])){
+            if(driveToForwards(positionsX[currentPosition+1], positionsY[currentPosition+1])){
                 currentPosition += 1;
             }
         }
     }
     else{
-        printf("FEHLER: letzte Position erreicht\n");
-        *lastPosReached = true;
-
+        printf("Letzte Position erreicht\n");
     }
     if(oldPosition != currentPosition && currentPosition %2 != 0){
         return true;
@@ -262,11 +280,18 @@ bool Drive::driveToNextPosition(bool *lastPosReached){       //Fährt zur nächs
     return false;
 }
 
+bool Drive::lastPositionReached(){
+    if(currentPosition == amountOfPositions - 1){
+        return true;
+    }
+    return false;
+}
+
 void Drive::deleteCurrentPos(){ //Löscht aktuelle und niedrigere Positionen, bei denen bereits Perlen aufgesammelt wurden
-    deletedPositions = currentPosition;
-    //Falls alle Positionen bereits angefahren wurden, wird als nächstes wieder Pos0 angefahren
-    if(deletedPositions == amountOfPositions - 1){
-        currentPosition = 0;
+    deletedPositions = currentPosition + 1;
+    //Falls alle Positionen bereits angefahren wurden, wird als nächstes wieder Pos0 angefahren (reset der deletedPositions)
+    if(deletedPositions >= amountOfPositions - 1){
+        deletedPositions = -1;
     }
 }
 

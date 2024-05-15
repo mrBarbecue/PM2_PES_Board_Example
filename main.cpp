@@ -29,7 +29,7 @@ int main(){
 
     //Verschiedene Zustände in switch-case
     enum states{
-    initializeLiftWheel, initializeDriveMotors, mining, wheelTo10cm, wheelToUpperPos, nextPos, targetContainer, test};
+    initializeLiftWheel, initializeDriveMotors, mining, wheelToUpperPos, nextPos, targetContainer, beforeNextPos, test};
     //Speichert die Zustände in switch-case
     int state = 0;
 
@@ -43,7 +43,7 @@ int main(){
                                                                                                 //vergangen ist
     int counterDriveToTargetContainer = 0;   //Zählt loops für driveToTargetContainer
 
-    bool lastPosReached = false; //Speichert ob es noch Aufsammelpositionen übrig hat
+    bool containerFull = false; //Falls der Container voll ist
 
     //Erstellt Objekte, da es von allen Klassen je nur ein Objekt braucht, heissen sie gleich wie ihre Klassen
     Drive Drive;
@@ -99,42 +99,32 @@ int main(){
                 case mining:
                     //Lässt Schaufelrad drehen
                     Mining.spinWheel(true);
-                    //Falls das Schaufelrad am Boden ankommt, wird das Schaufelrad ausgeschaltet und eine andere Aufsammelposition angefahren
-                    if(Mining.lowerWheel()){
-                        state = wheelTo10cm;
-                    }
-                    //Während Perlen aufgeladen werden, wird gecheckt ob der Container voll ist
-                    if(Container.containerFull()){
-                        //Wenn eigener Behälter voll ist
+                    //Falls das Schaufelrad am Boden ankommt oder der Container voll ist, wird die nächste hintere Position angefahren
+                    containerFull = Container.containerFull();
+                    if(Mining.lowerWheel() || containerFull){
                         state = wheelToUpperPos;
                     }
-                    break;
-
-                case wheelTo10cm:    
-                    //Sobal Schaufelrad überhalb der Perlen ist, wird neue Position angefahren
-                    if(Mining.wheelTo10cm()){
-                        Mining.spinWheel(false);
-                        state = nextPos;
-                    }
-                    break;
 
                 case wheelToUpperPos:
                     if(Mining.wheelToUpperPos()){
                         //Wenn Container voll ist, Schaufelrad in die obere Endlage, Rad verzögert ausschalten (um restliche Perlen noch in eigenen Behälter zu befördern) 
                         Mining.spinWheel(false);
-                        state = targetContainer;
+                        //Fährt zuerst ein stück weg vom Behälter um Platz für die Drehung zu schaffen
+                        state = nextPos;
                     }
                     break;
 
                 case nextPos:
+                    if(Drive.lastPositionReached() || containerFull){
+                        if(Drive.driveRelative(0, -80, false)){
+                        containerFull = false;
+                        state = targetContainer;   
+                        }
+                    }
                     //Weis an welcher Position der Roboter steht und wie der Roboter zu nächsten Position fahren muss, sobal er angekommen ist,
                     //fängt er wieder an Perlen aufzusammeln
-                    if(Drive.driveToNextPosition(&lastPosReached) && lastPosReached == false){
+                    else if(Drive.driveToNextPosition()){
                         state = mining;
-                    }
-                    else if(lastPosReached){
-                        state = targetContainer;
-                        lastPosReached = false;
                     }
                     break;
 
@@ -149,11 +139,15 @@ int main(){
                         if(counterServoTiltTime >= loopsServoTiltTime){
                             //Fährt den Behälter wieder ein
                             Container.tiltContainer(false);
-                            state = nextPos;
+                            state = beforeNextPos;
                             counterServoTiltTime = 0; //Zähler zurücksetzten
                         }
                     }
                     break;
+                case beforeNextPos:
+                    if(Drive.driveInFrontOfPos()){
+                        state = nextPos;
+                    }
             }
         }
         else{
