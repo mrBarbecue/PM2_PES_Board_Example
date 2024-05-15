@@ -34,13 +34,14 @@ class Drive{
         // |
         // v
         // Y
+        const int startPosY = 172;    //Wieviele mm vor dem Startbehälter sich die Räder befinden beim Initialisieren (Rädermittelpunkt ist Koordinatenursprung von Roboter) befinden
+        const int startPosX = 30;     //Wieviele mm rechts vom Koordinatenursprung sich die Räder befinden beim Initialisieren (Rädermittelpunkt ist Koordinatenursprung von Roboter) befinden
         
-        const int startAreaX = 250 - axialDistance;             //Wie breit der Bereich vor dem Startcontainer ist, wo sich der Roboter hinstellen darf
-        const int startAreaY = 140;                             
-        const int startAreaXOffset = (250 - startAreaX) / 2;    //Abstand der StartAreaX zum Koordinatenursprung (0,0) bei der linken unteren Ecke des Startbehälters (Zentriert)
+        
+        const int startAreaXOffset = 55;                    //Abstand der StartAreaX zum Koordinatenursprung (0,0) bei der linken unteren Ecke des Startbehälters (Zentriert)
         const int startAreaYOffset = 30;                        
-        const int startPosY = 172.0f;                           //Wieviele mm vor dem Startbehälter sich die Räder befinden beim Initialisieren (Rädermittelpunkt ist Koordinatenursprung von Roboter) befinden
-        const int startPosX = axialDistance / 2;                //Wieviele mm rechts vom Koordinatenursprung sich die Räder befinden beim Initialisieren (Rädermittelpunkt ist Koordinatenursprung von Roboter) befinden
+        const int startAreaX = 250 - 2 * startAreaXOffset;  //Wie breit der Bereich vor dem Startcontainer ist, wo sich der Roboter hinstellen darf
+        const int startAreaY = 140;                             
         
         //const float triggBeforeContainer = 1.7f / 3.3f;         //Spannung, wird normiert. Schwellwert ab wann der Roboter vor dem Container steht (bezogen auf Sensor)
 
@@ -55,15 +56,17 @@ class Drive{
         int positionsX[10] = {0};    //Speichert X Koordinaten der Aufnahme-Positionen des Roboters vor dem StartContainer, wird in calculatePositions berechnet
         int positionsY[10] = {0};
 
-        const int amountOfPositions = 6;    //Wieviele verschiedene Aufnahmepositionen vor Startbehälter es gibt, braucht es, um bestmögliche Verteilung vor Startbehälter zu berechnen
+        const int amountOfPositions = 3;    //Wieviele verschiedene Aufnahmepositionen vor Startbehälter es gibt, braucht es, um bestmögliche Verteilung vor Startbehälter zu berechnen
                                             //Max. 10
-        int currentPosition = 0;    //Speichert auf welcher Position beim Perlen aufnehmen sich der Roboter aktuell befindet
-                                    //-1: Zielcontainer
+        int currentPosition = -1;    //Speichert auf welcher Position beim Perlen aufnehmen sich der Roboter aktuell befindet
+                                    //-1: Start
                                     //0-6: Vor Startcontainer, Sammelt Perlen auf
         int deletedPositions = -1;  //Speichert welche Positionen nicht mehr angefahren wird
                                     //-1: alle Positionen sind verfügbar
                                     //0: Position0 ist nicht mehr verfügbar
                                     //1: ...
+
+        const float rotationTolerance = 0.1f; //Toleranz
                                     
         bool changeAngleAbs(float angle);           //Ändert Winkel des Roboters (Absolut und in RAD), Rückgabe true wenn soll Winkel = ist Winkel
         void changeAngleRel(float angle);           //Ändert Winkel des Roboters (Relativ und in GRAD)
@@ -71,7 +74,7 @@ class Drive{
         bool driveTo(int x, int y, bool direction); //Fährt Koordinaten an, Rückgabe true wenn bereits auf diesen Koordinate, direction 1 = geradeaus, 0 = rückwärts anfahren
         bool driveToForwards(int x, int y);         //Fährt geradeaus auf Zielkoordinaten, Rückgabewert true, falls bereits dort
         bool driveToBackwards(int x, int y);        //Fährt rückwärts auf Zielkoordinaten, Rückgabewert true, falls bereits dort
-        bool equalTo(float value1, float value2);   //Vergleicht Soll und Zielwerte mit 0.01 Tolerenz und gibt true zurück falls sie gleich sind
+        bool equalTo(float value1, float value2);   //Vergleicht Soll und Zielwerte mit einer Tolerenz und gibt true zurück falls sie gleich sind
     
     public:
         Drive();               
@@ -114,6 +117,8 @@ class Mining{
         float wheelLowerPositionRotation = 0;   //Hier wird nach dem Nullen der Offset zum Nullpunkt gespeichert
         float wheelUpperPosRotationOff = 0;     //Anzahl Umdreungen bis ganz oben (mit offset)
         float wheel10cmPosRotationOff = 0;      //Anzahl Umdrehung bis auf höhe Perlen (mit offset)
+
+        const float rotationTolerance = 0.1f; //0.05f
     
         bool equalTo(float value1, float value2);   //Vergleicht Soll und Zielwerte mit 0.05 Tolerenz und gibt true zurück falls sie gleich sind
         void printMotorLiftPos();                   //gibt die aktuelle höhe (in mm) auf der Sich der Arm befindet auf den Serialmonitor aus

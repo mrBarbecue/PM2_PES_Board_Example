@@ -21,7 +21,7 @@ int main(){
     //Funktion wird aufgerufen, wenn der UserButton gedrückt wird
     UserButton.fall(&executeMainFunction);
 
-    const int mainTaskPeriod = 60;  //Minimalzeit in ms pro maindurchlauf
+    const int mainTaskPeriod = 20;  //Minimalzeit in ms pro maindurchlauf
     Timer MainTaskTimer;            //Erzeugt MainTaskTimer Objekt;
 
     //Start timer-
@@ -55,6 +55,8 @@ int main(){
                                             //dass wegen der ungenauigkeit des IR-Sensors der Roboter nach dem
                                             //anhalten nicht erneut los fährt
 
+    printf("\n\n\n");
+
     while(true){
         MainTaskTimer.reset();
         counterDriveToTargetContainer++; //Zählt jeden while durchlauf
@@ -67,7 +69,7 @@ int main(){
             EnableMotors = true;
             switch(state){
                 case test:
-                    Mining.liftWheel();
+                    Container.containerFull();
                     break;
                     
                 case initializeLiftWheel:
@@ -84,18 +86,11 @@ int main(){
                     break;
 
                 case initializeDriveMotors:
-                    //Fährt auf den Startcontainer zu un stoppt bei der ersten Position um Perlen aufsammeln zu können
-                    if(Drive.initializeDriveMotors()){
-                        if(!driveMotorsInitialized){
-                            driveMotorsInitialized = Mining.wheelTo10cm();
-                        }
-                        else{
-                            //Berechnet Koordinaten der Positionen wo Perlen aufgesammelt werden
-                            Drive.calculatePositions();
-                            state = mining;
-                        }
-                    }
+                    Drive.initializeDriveMotors();
+                    Drive.calculatePositions();
+                    state = nextPos;
                     break;
+
                 case mining:
                     //Lässt Schaufelrad drehen
                     Mining.spinWheel(true);
@@ -116,7 +111,7 @@ int main(){
 
                 case nextPos:
                     if(Drive.lastPositionReached() || containerFull){
-                        if(Drive.driveRelative(0, -80, false)){
+                        if(Drive.driveRelative(0, 80, false)){
                         containerFull = false;
                         state = targetContainer;   
                         }
@@ -168,7 +163,8 @@ int main(){
         }
         
         //read timer and make the main thread sleep for the remaining time span (non blocking)
-        int MainTaskElapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(MainTaskTimer.elapsed_time()).count();
-        thread_sleep_for(mainTaskPeriod - MainTaskElapsedTime);
+        int mainTaskElapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(MainTaskTimer.elapsed_time()).count();
+        //printf("\nMainTaskElapsedTime: %d\n", mainTaskElapsedTime);
+        thread_sleep_for(mainTaskPeriod - mainTaskElapsedTime);
     }
 }

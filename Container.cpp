@@ -13,8 +13,8 @@ Container::Container() :
 }
 
 bool Container::containerFull(){
-    printf("UltraSonic: %.2f\n", ContainerFull.read());
-    if(triggContainerFull >= ContainerFull.read() && ContainerFull.read() > 0){
+    //printf("UltraSonic: %.2f\n", ContainerFull.read());
+    if(triggContainerFull >= ContainerFull.read() && ContainerFull.read() >= 0){
         printf("containerFull\n");
         return true;
     }
@@ -23,11 +23,11 @@ bool Container::containerFull(){
 
 void Container::tiltContainer(bool enable){   //Kippt Behälter, int enable -> Kippt falls true
     if(enable){
-        printf("TiltContainer: true\n");
+        //printf("TiltContainer: true\n");
         ServoTilt.setNormalisedPulseWidth(1.0f);
     }
     else{
-        printf("TiltContainer: false\n");
+        //printf("TiltContainer: false\n");
         ServoTilt.setNormalisedPulseWidth(0.0f);
     }
 }

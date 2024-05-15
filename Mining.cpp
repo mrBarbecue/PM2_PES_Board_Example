@@ -26,23 +26,23 @@ Mining::Mining() :
 
 void Mining::spinWheel(bool enable){      //Dreht Schaufelrad, bool enable -> Dreht falls true, Stoppt falls false
     MotorWheel.write(enable);
-    printf("MotorWheel: %d\n", MotorWheel.read());
+    //printf("MotorWheel: %d\n", MotorWheel.read());
 }
 
 bool Mining::initializeMotorLiftWheel(){  //Nullt den Encoder des Motors MotorLiftWheel
-    printf("initializeMotorLiftWheel\n");
-    printf("LiftWheel rotations: %.4f\n",MotorLiftWheel.getRotation());
+    //printf("initializeMotorLiftWheel\n");
+    //printf("LiftWheel rotations: %.4f\n",MotorLiftWheel.getRotation());
     if(!WheelLowerPosition.read()){
         MotorLiftWheel.setVelocity(0.0f);
         wheelLowerPositionRotation = MotorLiftWheel.getRotation();
         wheelUpperPosRotationOff = wheelUpperPosRotation + wheelLowerPositionRotation;
         wheel10cmPosRotationOff = wheel10cmPosRotation + wheelLowerPositionRotation;
-        printf("\n\nwheelLowerPositionRotation: %.4f\n\n", wheelLowerPositionRotation);
+        //printf("\n\nwheelLowerPositionRotation: %.4f\n\n", wheelLowerPositionRotation);
         
         return true;
     }
     else if(MotorLiftWheel.getRotation() < (-wheelUpperPosRotation)){ //Watchdog falls Endschalter nicht angiebt
-        printf("limitSwitchMissing\n");
+        //printf("limitSwitchMissing\n");
         return true;
     }
     MotorLiftWheel.setVelocity(-maxVelocityRps); //fährt mit Maxgeschwindigkeit nach unten
@@ -51,12 +51,12 @@ bool Mining::initializeMotorLiftWheel(){  //Nullt den Encoder des Motors MotorLi
 
 bool Mining::lowerWheel(){       //Senkt Schaufelrad, rückgabewert true wenn ganz unten
     if(!WheelLowerPosition.read()){
-        printf("wheelLowerPosition\n");
+        //printf("wheelLowerPosition\n");
         MotorLiftWheel.setVelocity(0.0f);
         return true;
     }
     else{
-        printf("lowerWheel\n");
+        //printf("lowerWheel\n");
         printMotorLiftPos();
         MotorLiftWheel.setVelocity(-standardVelocity);
         return false;
@@ -64,14 +64,14 @@ bool Mining::lowerWheel(){       //Senkt Schaufelrad, rückgabewert true wenn ga
 }
 
 bool Mining::wheelToUpperPos(){           //Hebt Schaufelrad in die obere Endlage   (Volle Geschwindigkeit)
-    printf("wheelUpperPosRotation: %.4f\n", wheelUpperPosRotationOff);
-    printf("MotorLiftWheel rotations: %.4f\n", MotorLiftWheel.getRotation());
+    //printf("wheelUpperPosRotation: %.4f\n", wheelUpperPosRotationOff);
+    //printf("MotorLiftWheel rotations: %.4f\n", MotorLiftWheel.getRotation());
     if(equalTo(MotorLiftWheel.getRotation(), wheelUpperPosRotationOff)){
-        printf("WheelAtUpperPos\n");
+        //printf("WheelAtUpperPos\n");
         return true;
     }
     else{
-        printf("WheelToUpperPos\n");
+        //printf("WheelToUpperPos\n");
         printMotorLiftPos();
         MotorLiftWheel.setRotation(wheelUpperPosRotationOff);
         return false;
@@ -79,13 +79,13 @@ bool Mining::wheelToUpperPos(){           //Hebt Schaufelrad in die obere Endlag
 }
 
 bool Mining::wheelTo10cm(){                //Senkt oder Hebt Schaufelrad auf 10cm    (Volle Geschwindigkeit)
-    printf("wheel10cmPosRotation: %.4f\n", wheel10cmPosRotationOff);
+    //printf("wheel10cmPosRotation: %.4f\n", wheel10cmPosRotationOff);
     if(equalTo(MotorLiftWheel.getRotation(), wheel10cmPosRotationOff)){
-        printf("WheelAt10cm\n");
+        //printf("WheelAt10cm\n");
         return true;
     }
     else{
-        printf("WheelTo10cm\n");
+        //printf("WheelTo10cm\n");
         printMotorLiftPos();
         MotorLiftWheel.setRotation(wheel10cmPosRotationOff);
         return false;
@@ -93,14 +93,14 @@ bool Mining::wheelTo10cm(){                //Senkt oder Hebt Schaufelrad auf 10c
 }
 
 bool Mining::equalTo(float value1, float value2){
-    if(value1 > value2 - 0.05 && value1 < value2 + 0.05){
+    if(value1 > value2 - rotationTolerance && value1 < value2 + rotationTolerance){
         return true;
     }
     return false;
 }
 
 void Mining::printMotorLiftPos(){
-    printf("LiftWheel position: %.4fmm\n",(MotorLiftWheel.getRotation() - wheelLowerPositionRotation) * ThreadPitch + 10);
+    //printf("LiftWheel position: %.4fmm\n",(MotorLiftWheel.getRotation() - wheelLowerPositionRotation) * ThreadPitch + 10);
 }
 
 //Für Tests

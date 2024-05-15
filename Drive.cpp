@@ -31,14 +31,14 @@ void Drive::calculatePositions(){
         //Weist Position Startwert zu
         positionsX[0] = startPosX;
         positionsY[0] = startAreaYOffset;
-        printf("Position1: (%d, %d)\n", positionsX[0], positionsY[0]);
+        //printf("Position1: (%d, %d)\n", positionsX[0], positionsY[0]);
     }
     else if(amountOfPositions > 1 && amountOfPositions <= 10){
         //Berechnet die Distanz zwischen den einzelnen X-Positionen
         int distanceX = startAreaX / (amountOfPositions-1);
-        for(int i = 1; i < amountOfPositions+1; i++){
+        for(int i = 0; i < amountOfPositions; i++){
             //Weist X-Positionen Koordinate mit gleichem Abstand zu
-            positionsX[i] = startAreaXOffset + distanceX * i;
+            positionsX[i] = startAreaXOffset + distanceX * i+1;
             if(i % 2 == 0){
                 //Weist geraden Positionen den Y-Wert "vorne"
                 positionsY[i] = startAreaYOffset;
@@ -47,7 +47,7 @@ void Drive::calculatePositions(){
                 //Weist ungeraden Positionen den Y-Wert "hinten"
                 positionsY[i] = startAreaY + startAreaYOffset;
             }
-            printf("Position%d: (%d, %d)\n", i, positionsX[i], positionsY[i]);
+            //printf("Position%d: (%d, %d)\n", i, positionsX[i], positionsY[i]);
         }
     }
     else{
@@ -173,7 +173,6 @@ bool Drive::driveTo(int x, int y, bool direction){ //direction == true -> fährt
 
     //Falls Roboter bereits auf Position steht, wird true zurückgegeben
     if(changeInPositionX == 0 && changeInPositionY == 0){
-
         return true;
     }
     else{
@@ -191,7 +190,7 @@ bool Drive::driveTo(int x, int y, bool direction){ //direction == true -> fährt
 }
 
 bool Drive::driveToForwards(int x, int y){
-    printf("driveToForwards\n");
+    //printf("driveToForwards\n");
     if(driveTo(x, y, true)){
         return true;
     }
@@ -199,7 +198,7 @@ bool Drive::driveToForwards(int x, int y){
 }
 
 bool Drive::driveToBackwards(int x, int y){
-    printf("driveToBackwards\n");
+    //printf("driveToBackwards\n");
     if(driveTo(x, y, false)){
         return true;
     }
@@ -229,7 +228,7 @@ bool Drive::driveRelative(int x, int y, bool direction){ //direction = true -> f
 }
 
 bool Drive::toTargetContainer(){         //Fährt zum Zielbehälter
-    printf("toTargetContainer\n");
+    //printf("toTargetContainer\n");
     if(driveToBackwards(posTargetContainerX, posTargetContainerY)){
         //Dreht sich vor Zielbehälter so, dass der Behälter in den Zielbehälter ausgeschütet werden kann
         if(changeAngleAbs(PI)){
@@ -244,20 +243,10 @@ bool Drive::toTargetContainer(){         //Fährt zum Zielbehälter
 bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem Startbehälter
     //Flankenerkennen wenn neu Position erreicht wurde
     int oldPosition = currentPosition;
-    printf("driveToNextPosition\n");
-    printf("currentPos: %d\n", currentPosition);
-    //Falls der Roboter beim Zielbehälter steht
-    if(currentPosition == -1){
-        //Fährt zur ersten Aufnahmeposition vor Startbehälter
-        if(driveToForwards(positionsX[deletedPositions+1], positionsY[deletedPositions+1])){
-            //Stellt Roboter senkrecht zu Starbehälter
-            if(changeAngleAbs(PI/2)){
-                currentPosition = deletedPositions+1;
-            }
-        }
-    }
+    //printf("driveToNextPosition\n");
+    //printf("currentPos: %d\n", currentPosition);
     //Falls der Roboter bereits auf einer Position vor dem Startbehälter steht und er weiter aufsammeln muss
-    else if(currentPosition < amountOfPositions-1){
+    if(currentPosition < amountOfPositions-1){
         //Falls auf Y-Postition "vorne"
         if(currentPosition % 2 == 0){
             if(driveToBackwards(positionsX[currentPosition+1], positionsY[currentPosition+1])){
@@ -296,7 +285,7 @@ void Drive::deleteCurrentPos(){ //Löscht aktuelle und niedrigere Positionen, be
 }
 
 bool Drive::equalTo(float value1, float value2){
-    if(value1 > value2 - 0.01 && value1 < value2 + 0.01){
+    if(value1 > value2 - rotationTolerance && value1 < value2 + rotationTolerance){
         return true;
     }
     return false;
@@ -305,18 +294,18 @@ bool Drive::equalTo(float value1, float value2){
 //Für Tests
 
 float Drive::getIrSensor(){
-    printf("InFrontOfContainer: %f\n", InFrontOfContainer.read());
+    //printf("InFrontOfContainer: %f\n", InFrontOfContainer.read());
     return InFrontOfContainer.read();
 }
 
 float Drive::rotateRightWheel(){
     MotorDriveRight.setVelocity(-1.0f);
-    printf("MotorDriveRight voltage: %.1f\n", MotorDriveRight.getVoltage());
+    //printf("MotorDriveRight voltage: %.1f\n", MotorDriveRight.getVoltage());
     return MotorDriveRight.getVoltage();
 }
 
 float Drive::rotateLeftWheel(){
     MotorDriveLeft.setVelocity(1.0f);
-    printf("MotorDriveRLeft voltage: %.1f\n", MotorDriveLeft.getVoltage());
+    //printf("MotorDriveRLeft voltage: %.1f\n", MotorDriveLeft.getVoltage());
     return MotorDriveLeft.getVoltage();
 }
