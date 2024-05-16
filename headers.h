@@ -59,7 +59,7 @@ class Drive{
         const int amountOfPositions = 3;    //Wieviele verschiedene Aufnahmepositionen vor Startbehälter es gibt, braucht es, um bestmögliche Verteilung vor Startbehälter zu berechnen
                                             //Max. 10
         int currentPosition = -1;    //Speichert auf welcher Position beim Perlen aufnehmen sich der Roboter aktuell befindet
-                                    //-1: Start
+                                    //-1: Start oder Zielbehälter, spielt keine Rolle
                                     //0-6: Vor Startcontainer, Sammelt Perlen auf
         int deletedPositions = -1;  //Speichert welche Positionen nicht mehr angefahren wird
                                     //-1: alle Positionen sind verfügbar
@@ -102,8 +102,8 @@ class Mining{
         //Ausgang um Schaufelrad anzusteuern
         DigitalOut MotorWheel;
 
-        const float maxVelocityRps = 6.0f; //7.5f
-        const float standardVelocity = 4.0f; //5.0f
+        const float maxVelocityRps = 7.0f; //7.5f
+        const float standardVelocity = 1.5f; //5.0f
 
         const float maxVelocity = maxVelocityRps / 12.0f;
 
@@ -143,14 +143,17 @@ class Container{
         //Servo um Behälter auskippen zu können
         Servo ServoTilt;
 
-        const float servoTiltAngleMin = 0.0150f;
-        const float servoTiltAngleMax = 0.1150f;
-        const float triggContainerFull = 5.0f; //Bei welchem Abstand zum Ultraschallsensor in cm der Container als voll gilt
+        const float servoTiltAngleMin = 0.0325f;
+        const float servoTiltAngleMax = 0.1175f;
+        const float triggContainerFull = 10.0f; //Bei welchem Abstand zum Ultraschallsensor in cm der Container als voll gilt
 
     public:
         Container();
         bool containerFull();               //Gibt true zurück, falls behälter voll ist
         void tiltContainer(bool enable);    //Kippt Behälter, bei true
+
+        //Für Tests
+        float getUltrasonic();
 };
 
 #endif

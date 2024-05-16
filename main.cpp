@@ -21,19 +21,13 @@ int main(){
     //Funktion wird aufgerufen, wenn der UserButton gedrückt wird
     UserButton.fall(&executeMainFunction);
 
-    const int mainTaskPeriod = 20;  //Minimalzeit in ms pro maindurchlauf
+    const int mainTaskPeriod = 40;  //Minimalzeit in ms pro maindurchlauf
     Timer MainTaskTimer;            //Erzeugt MainTaskTimer Objekt;
 
     //Start timer-
     MainTaskTimer.start();
 
-    //Verschiedene Zustände in switch-case
-    enum states{
-    initializeLiftWheel, initializeDriveMotors, mining, wheelToUpperPos, nextPos, targetContainer, beforeNextPos, test};
-    //Speichert die Zustände in switch-case
-    int state = 0;
-
-    const int servoTiltTime = 3000;     //Zeit (in ms) wie lange der Behälter ausgekippt werden soll
+    const int servoTiltTime = 10000;     //Zeit (in ms) wie lange der Behälter ausgekippt werden soll
     const int loopsServoTiltTime = servoTiltTime / mainTaskPeriod; //Berechnet anzahl durchläufe in main bis servoTiltTime vergangen ist
     int counterServoTiltTime = 0;   //Zählt loops für servoTiltTime
 
@@ -55,6 +49,19 @@ int main(){
                                             //dass wegen der ungenauigkeit des IR-Sensors der Roboter nach dem
                                             //anhalten nicht erneut los fährt
 
+    //Verschiedene Zustände in switch-case                                        
+    enum states{                            
+    initializeLiftWheel,
+    initializeDriveMotors,
+    mining,
+    wheelToUpperPos,
+    nextPos,
+    targetContainer,
+    beforeNextPos,
+    test};
+    //Speichert die Zustände in switch-case
+    int state = 0;
+
     printf("\n\n\n");
 
     while(true){
@@ -69,7 +76,15 @@ int main(){
             EnableMotors = true;
             switch(state){
                 case test:
-                    Container.containerFull();
+                    Container.tiltContainer(true);
+                    //Zählt loops
+                    counterServoTiltTime++;
+                    if(counterServoTiltTime >= loopsServoTiltTime){
+                        //Fährt den Behälter wieder ein
+                        counterServoTiltTime = 0; //Zähler zurücksetzten
+                        Container.tiltContainer(false);
+                        state = 100;
+                    }
                     break;
                     
                 case initializeLiftWheel:
@@ -99,6 +114,7 @@ int main(){
                     if(Mining.lowerWheel() || containerFull){
                         state = wheelToUpperPos;
                     }
+                    break;
 
                 case wheelToUpperPos:
                     if(Mining.wheelToUpperPos()){
@@ -110,6 +126,7 @@ int main(){
                     break;
 
                 case nextPos:
+                    printf("nextPos\n");
                     if(Drive.lastPositionReached() || containerFull){
                         if(Drive.driveRelative(0, 80, false)){
                         containerFull = false;
@@ -124,6 +141,7 @@ int main(){
                     break;
 
                 case targetContainer:
+                    printf("targetContainer\n");
                     Drive.deleteCurrentPos(); //Löscht Aufsammel-Positonen die bereits angefahren wurden
                     if(Drive.toTargetContainer()){
                         //Kippt den Behälter
@@ -134,15 +152,18 @@ int main(){
                         if(counterServoTiltTime >= loopsServoTiltTime){
                             //Fährt den Behälter wieder ein
                             Container.tiltContainer(false);
-                            state = beforeNextPos;
                             counterServoTiltTime = 0; //Zähler zurücksetzten
+                            state = beforeNextPos;
                         }
                     }
                     break;
+
                 case beforeNextPos:
+                    printf("beforeNextPos\n");
                     if(Drive.driveInFrontOfPos()){
                         state = nextPos;
                     }
+                    break;
             }
         }
         else{

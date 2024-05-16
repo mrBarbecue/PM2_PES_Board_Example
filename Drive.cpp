@@ -105,7 +105,7 @@ void Drive::changeAngleRel(float angle){   //Berechnung in Grad und relativ
 
 bool Drive::changeAngleAbs(float angle){   //Berechnung in Rad und absolut
     printf("changeAngleAbs\n");
-    printf("targetAbsoluteAngle: %.1frad\n", angle);
+    printf("targetAbsoluteAngle: %.2frad\n", angle);
     printf("currentAngle: %.1f°\n", currentAngle);
     printf("rotation: %f\n", MotorDriveLeft.getRotation());
     printf("targetRotationsAngle: %f\n", targetRotationsAngle);
@@ -183,14 +183,15 @@ bool Drive::driveTo(int x, int y, bool direction){ //direction == true -> fährt
             if(driveStraight(sqrt(pow(changeInPositionY, 2) + pow(changeInPositionX, 2)) * inverseDirection)){
                 currentPosX = x;
                 currentPosY = y;
+                return true;
             }
         }
-        return false;
     }
+    return false;
 }
 
 bool Drive::driveToForwards(int x, int y){
-    //printf("driveToForwards\n");
+    printf("driveToForwards\n");
     if(driveTo(x, y, true)){
         return true;
     }
@@ -198,37 +199,64 @@ bool Drive::driveToForwards(int x, int y){
 }
 
 bool Drive::driveToBackwards(int x, int y){
-    //printf("driveToBackwards\n");
+    printf("driveToBackwards\n");
     if(driveTo(x, y, false)){
         return true;
     }
     return false;
-
 }
+
 bool Drive::driveInFrontOfPos(){
     if(driveToForwards(positionsX[deletedPositions + 1], posTargetContainerY - 50)){
         return true;
     }
     return false;
 }
-
-
+/*
+bool Drive::driveRelative(int x, int y, bool direction){ //direction = true -> fährt vorwärts
+    int oldPositionX = currentPosX;
+    int oldPositionY = currentPosY;
+    if(direction){
+        driveToForwards(currentPosX + x, currentPosY + y);
+        if(oldPositionX != currentPosX || oldPositionY != currentPosY){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+    else{
+        driveToBackwards(currentPosX + x, currentPosY + y);
+        if(oldPositionX != currentPosX || oldPositionY != currentPosY){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+}
+*/
 bool Drive::driveRelative(int x, int y, bool direction){ //direction = true -> fährt vorwärts
     if(direction){
         if(driveToForwards(currentPosX + x, currentPosY + y)){
             return true;
+        }
+        else{
+            return false;
         }
     }
     else{
         if(driveToBackwards(currentPosX + x, currentPosY + y)){
             return true;
         }
+        else{
+            return false;
+            }
     }
-    return false;
 }
 
 bool Drive::toTargetContainer(){         //Fährt zum Zielbehälter
-    //printf("toTargetContainer\n");
+    printf("toTargetContainer\n");
     if(driveToBackwards(posTargetContainerX, posTargetContainerY)){
         //Dreht sich vor Zielbehälter so, dass der Behälter in den Zielbehälter ausgeschütet werden kann
         if(changeAngleAbs(PI)){
@@ -263,7 +291,7 @@ bool Drive::driveToNextPosition(){       //Fährt zur nächsten Position vor dem
     else{
         printf("Letzte Position erreicht\n");
     }
-    if(oldPosition != currentPosition && currentPosition %2 != 0){
+    if(oldPosition != currentPosition && currentPosition %2 == 0){
         return true;
     }
     return false;

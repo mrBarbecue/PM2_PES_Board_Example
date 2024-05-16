@@ -41,12 +41,16 @@ bool Mining::initializeMotorLiftWheel(){  //Nullt den Encoder des Motors MotorLi
         
         return true;
     }
+    /*
     else if(MotorLiftWheel.getRotation() < (-wheelUpperPosRotation)){ //Watchdog falls Endschalter nicht angiebt
         //printf("limitSwitchMissing\n");
         return true;
     }
+    */
+    else{
     MotorLiftWheel.setVelocity(-maxVelocityRps); //fährt mit Maxgeschwindigkeit nach unten
     return false;
+    }
 }
 
 bool Mining::lowerWheel(){       //Senkt Schaufelrad, rückgabewert true wenn ganz unten
